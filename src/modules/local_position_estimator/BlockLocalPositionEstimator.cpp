@@ -51,6 +51,7 @@ BlockLocalPositionEstimator::BlockLocalPositionEstimator() :
 
 	// block parameters
 	_integrate(this, "INTEGRATE"),
+	_alt_mode(param_find("MPC_ALT_MODE")),
 	_sonar_z_stddev(this, "SNR_Z"),
 	_sonar_z_offset(this, "SNR_OFF_Z"),
 	_lidar_z_stddev(this, "LDR_Z"),
@@ -137,6 +138,7 @@ BlockLocalPositionEstimator::BlockLocalPositionEstimator() :
 	_flowX(0),
 	_flowY(0),
 	_flowMeanQual(0),
+	
 
 	// status
 	_canEstimateXY(false),
@@ -199,6 +201,13 @@ BlockLocalPositionEstimator::BlockLocalPositionEstimator() :
 
 	// intialize parameter dependent matrices
 	updateParams();
+
+	if (_alt_mode){
+		mavlink_and_console_log_info(&mavlink_log_pub, "[LPE] in alt mode, use distance sensor");
+	}
+	else{
+		mavlink_and_console_log_info(&mavlink_log_pub, "[LPE] NOT in alt mode, use X(z)");
+	}
 }
 
 BlockLocalPositionEstimator::~BlockLocalPositionEstimator()
@@ -234,6 +243,7 @@ void BlockLocalPositionEstimator::update()
 	// reset pos, vel, and terrain on arming
 	if (!_lastArmedState && armedState) {
 
+		initP();
 		// we just armed, we are at home position on the ground
 		_x(X_x) = 0;
 		_x(X_y) = 0;
@@ -250,6 +260,7 @@ void BlockLocalPositionEstimator::update()
 		_x(X_vy) = 0;
 		_x(X_vz) = 0;
 
+		mavlink_and_console_log_info(&mavlink_log_pub,"Baro calibration is %f",double(_baroAltHome));
 		// assume we are on the ground, so terrain alt is local alt
 		_x(X_tz) = _x(X_z);
 	}
@@ -277,9 +288,12 @@ void BlockLocalPositionEstimator::update()
 
 	// update home position projection
 	if (homeUpdated) {
+		mavlink_and_console_log_info(&mavlink_log_pub, "Home Updated");
 		updateHome();
 	}
 
+
+ 
 	// determine if we should start estimating
 	_canEstimateZ =
 		(_baroInitialized && _baroFault < fault_lvl_disable);
@@ -560,7 +574,7 @@ void BlockLocalPositionEstimator::publishLocalPos()
 		_pub_lpos.get().v_z_valid = _canEstimateZ;
 		_pub_lpos.get().x = _x(X_x); 	// north
 		_pub_lpos.get().y = _x(X_y);  	// east
-		_pub_lpos.get().z = _x(X_z); 	// down
+		_pub_lpos.get().z = (_alt_mode > 0)? (-agl()):(_x(X_z));	// down
 		_pub_lpos.get().vx = _x(X_vx);  // north
 		_pub_lpos.get().vy = _x(X_vy);  // east
 		_pub_lpos.get().vz = _x(X_vz); 	// down

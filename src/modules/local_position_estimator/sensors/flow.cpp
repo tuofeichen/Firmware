@@ -82,8 +82,8 @@ int BlockLocalPositionEstimator::flowMeasure(Vector<float, n_y_flow> &y)
 	}
 
 	// optical flow in x, y axis
-	float flow_x_rad = _sub_flow.get().pixel_flow_x_integral;
-	float flow_y_rad = _sub_flow.get().pixel_flow_y_integral;
+	float flow_x_rad = -_sub_flow.get().pixel_flow_x_integral;
+	float flow_y_rad = -_sub_flow.get().pixel_flow_y_integral;
 
 	// angular rotation in x, y axis
 	float gyro_x_rad = _flow_gyro_x_high_pass.update(

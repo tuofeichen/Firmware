@@ -93,6 +93,8 @@
 #define MIN_DIST		0.01f
 #define MANUAL_THROTTLE_MAX_MULTICOPTER	0.9f
 #define ONE_G	9.8066f
+#define MAX_DISP 2
+
 
 /**
  * Multicopter position control app start / stop handling function
@@ -244,6 +246,7 @@ private:
 	bool _run_alt_control;
 
 	math::Vector<3> _pos;
+	math::Vector<3> _pos_home;
 	math::Vector<3> _pos_sp;
 	math::Vector<3> _vel;
 	math::Vector<3> _vel_sp;
@@ -419,6 +422,7 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_params.sp_offs_max.zero();
 
 	_pos.zero();
+	_pos_home.zero();
 	_pos_sp.zero();
 	_vel.zero();
 	_vel_sp.zero();
@@ -461,6 +465,13 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_params_handles.hold_max_z = param_find("MPC_HOLD_MAX_Z");
 	_params_handles.acc_hor_max = param_find("MPC_ACC_HOR_MAX");
 	_params_handles.alt_mode = param_find("MPC_ALT_MODE");
+
+	if (_params_handles.alt_mode){
+		mavlink_log_info(&_mavlink_log_pub, "[MPC] in alt mode, use distance sensor");
+	}
+	else{
+		mavlink_log_info(&_mavlink_log_pub, "[MPC] NOT in alt mode, use X(z)");
+	}
 
 	/* fetch initial parameter values */
 	parameters_update(true);
@@ -891,6 +902,18 @@ MulticopterPositionControl::control_offboard(float dt)
 			_pos_sp(0) = _pos_sp_triplet.current.x;
 			_pos_sp(1) = _pos_sp_triplet.current.y;
 
+			if ((_pos_sp(0) - _pos(0)) *(_pos_sp(0) - _pos(0))   > MAX_DISP) // limit the max x displacement
+			{			
+				mavlink_log_info(&_mavlink_log_pub,"[MPC] Warning, x setpoint is too far from current pose, pos hold instead");
+				_pos_sp(0) = _pos_home(0);
+			}
+			if ((_pos_sp(1) - _pos(1)) *(_pos_sp(1) - _pos(1))  > MAX_DISP) // limit the max y displacement
+			{			
+				mavlink_log_info(&_mavlink_log_pub,"[MPC] Warning, y setpoint is too far from current pose, pos hold instead");
+				_pos_sp(1) = _pos_home(1);
+			}
+
+
 		} else if (_control_mode.flag_control_velocity_enabled && _pos_sp_triplet.current.velocity_valid) {
 			/* control velocity */
 			/* reset position setpoint to current position if needed */
@@ -913,6 +936,11 @@ MulticopterPositionControl::control_offboard(float dt)
 		if (_control_mode.flag_control_altitude_enabled && _pos_sp_triplet.current.position_valid) {
 			/* Control altitude */
 			_pos_sp(2) = _pos_sp_triplet.current.z;
+			if (((_pos_sp(2) - _pos(2)) *(_pos_sp(2) - _pos(2))  > MAX_DISP) && (_pos_sp(2)>0)) // (ned setpoint always neg) limit the z max displacement
+			{			
+				mavlink_log_info(&_mavlink_log_pub,"[MPC] Warning, z pos is %4.2f, z setpoint is %4.2f",double(_pos(2)),double(_pos_sp(2)));
+				_pos_sp(2) = _pos_home(2); // go back to where offboard is enabled
+			}
 
 		} else if (_control_mode.flag_control_climb_rate_enabled && _pos_sp_triplet.current.velocity_valid) {
 			/* reset alt setpoint to current altitude if needed */
@@ -1194,6 +1222,7 @@ MulticopterPositionControl::task_main()
 	bool reset_int_xy = true;
 	bool reset_yaw_sp = true;
 	bool was_armed = false;
+	bool was_offboard = false;
 
 	hrt_abstime t_prev = 0;
 
@@ -1246,6 +1275,12 @@ MulticopterPositionControl::task_main()
 			reset_yaw_sp = true;
 		}
 
+		if (_control_mode.flag_control_offboard_enabled && !was_offboard) {
+			mavlink_log_info(&_mavlink_log_pub,"[MPC] enter offboard!");
+			_pos_home = _pos; // here note down where is the position that's enabled off board
+		}
+
+
 		/* reset yaw and altitude setpoint for VTOL which are in fw mode */
 		if (_vehicle_status.is_vtol) {
 			if (!_vehicle_status.is_rotary_wing) {
@@ -1256,7 +1291,7 @@ MulticopterPositionControl::task_main()
 
 		//Update previous arming state
 		was_armed = _control_mode.flag_armed;
-
+		was_offboard = _control_mode.flag_control_offboard_enabled;
 		update_ref();
 
 		/* Update velocity derivative,

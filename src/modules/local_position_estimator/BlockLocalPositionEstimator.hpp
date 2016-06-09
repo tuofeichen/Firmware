@@ -238,6 +238,7 @@ private:
 
 	// general parameters
 	BlockParamInt  _integrate;
+	bool  _alt_mode;
 
 	// sonar parameters
 	BlockParamFloat  _sonar_z_stddev;
