@@ -1292,6 +1292,7 @@ MulticopterPositionControl::task_main()
 		//Update previous arming state
 		was_armed = _control_mode.flag_armed;
 		was_offboard = _control_mode.flag_control_offboard_enabled;
+
 		update_ref();
 
 		/* Update velocity derivative,
@@ -1384,6 +1385,7 @@ MulticopterPositionControl::task_main()
 				memcpy(&_att_sp.R_body[0], R.data, sizeof(_att_sp.R_body));
 				_att_sp.R_valid = true;
 
+
 				_att_sp.roll_body = 0.0f;
 				_att_sp.pitch_body = 0.0f;
 				_att_sp.yaw_body = _yaw;
@@ -1435,10 +1437,11 @@ MulticopterPositionControl::task_main()
 				}
 
 				// do not go slower than the follow target velocity when position tracking is active (set to valid)
-
 				if(_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_FOLLOW_TARGET &&
 					_pos_sp_triplet.current.velocity_valid &&
 					_pos_sp_triplet.current.position_valid) {
+					
+					mavlink_log_info(&_mavlink_log_pub, "are we in position tracking?");
 
 					math::Vector<3> ft_vel(_pos_sp_triplet.current.vx, _pos_sp_triplet.current.vy, 0);
 
@@ -1584,6 +1587,7 @@ MulticopterPositionControl::task_main()
 
 				/* publish velocity setpoint */
 				if (_global_vel_sp_pub != nullptr) {
+					mavlink_log_info(&_mavlink_log_pub,"Publish global sp? ");
 					orb_publish(ORB_ID(vehicle_global_velocity_setpoint), _global_vel_sp_pub, &_global_vel_sp);
 
 				} else {
@@ -1648,6 +1652,7 @@ MulticopterPositionControl::task_main()
 					}
 
 					/* thrust vector in NED frame */
+					// PID controller for velocity
 					math::Vector<3> thrust_sp = vel_err.emult(_params.vel_p) + _vel_err_d.emult(_params.vel_d) + thrust_int;
 
 					if (_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_TAKEOFF
@@ -1829,7 +1834,9 @@ MulticopterPositionControl::task_main()
 						}
 					}
 
-					/* calculate attitude setpoint from thrust vector */
+					/* calculate attitude setpoint from thrust vector */ 
+					// local position setpoint (thrust vector is in body frame)
+
 					if (_control_mode.flag_control_velocity_enabled) {
 						/* desired body_z axis = -normalize(thrust_vector) */
 						math::Vector<3> body_x;
@@ -1837,7 +1844,7 @@ MulticopterPositionControl::task_main()
 						math::Vector<3> body_z;
 
 						if (thrust_abs > SIGMA) {
-							body_z = -thrust_sp / thrust_abs;
+							body_z = -thrust_sp / thrust_abs; //unit vector body z axis 
 
 						} else {
 							/* no thrust, set Z axis to safe value */
@@ -1846,7 +1853,11 @@ MulticopterPositionControl::task_main()
 						}
 
 						/* vector of desired yaw direction in XY plane, rotated by PI/2 */
+						// prolly the key place to change
+						
 						math::Vector<3> y_C(-sinf(_att_sp.yaw_body), cosf(_att_sp.yaw_body), 0.0f);
+
+						mavlink_log_info(&_mavlink_log_pub,"current yaw sp is %3.2f",(double)_att_sp.yaw_body);
 
 						if (fabsf(body_z(2)) > SIGMA) {
 							/* desired body_x axis, orthogonal to body_z */
@@ -1860,6 +1871,7 @@ MulticopterPositionControl::task_main()
 							body_x.normalize();
 
 						} else {
+							mavlink_log_info(&_mavlink_log_pub,"xy plane thrust?");
 							/* desired thrust is in XY plane, set X downside to construct correct matrix,
 							 * but yaw component will not be used actually */
 							body_x.zero();
@@ -1876,6 +1888,10 @@ MulticopterPositionControl::task_main()
 							R(i, 2) = body_z(i);
 						}
 
+						// mavlink_log_info(&_mavlink_log_pub,"thrust vector is: body x: %3.2f %3.2f %3.2f",(double)body_x(0),(double)body_x(1),(double)body_x(2));
+						// mavlink_log_info(&_mavlink_log_pub,"thrust vector is: body y: %3.2f %3.2f %3.2f",(double)body_y(0),(double)body_y(1),(double)body_y(2));
+						// mavlink_log_info(&_mavlink_log_pub,"thrust vector is: body z: %3.2f %3.2f %3.2f",(double)body_z(0),(double)body_z(1),(double)body_z(2));
+						
 						/* copy rotation matrix to attitude setpoint topic */
 						memcpy(&_att_sp.R_body[0], R.data, sizeof(_att_sp.R_body));
 						_att_sp.R_valid = true;
