@@ -323,6 +323,7 @@ void AttitudeEstimatorQ::task_main()
 	fds[0].fd = _sensors_sub;
 	fds[0].events = POLLIN;
 
+
 	while (!_task_should_exit) {
 		int ret = px4_poll(fds, 1, 1000);
 
@@ -699,6 +700,8 @@ bool AttitudeEstimatorQ::init()
 	k.normalize();
 
 	// 'i' is Earth X axis (North) unit vector in body frame, orthogonal with 'k'
+	_mag = {1, 0 ,0};
+
 	Vector<3> i = (_mag - k * (_mag * k));
 	i.normalize();
 
