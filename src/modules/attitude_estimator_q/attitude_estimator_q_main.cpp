@@ -700,7 +700,7 @@ bool AttitudeEstimatorQ::init()
 	k.normalize();
 
 	// 'i' is Earth X axis (North) unit vector in body frame, orthogonal with 'k'
-	_mag = {0, -1 ,0};
+	_mag = {1, 0 ,0};
 
 	Vector<3> i = (_mag - k * (_mag * k));
 	i.normalize();
