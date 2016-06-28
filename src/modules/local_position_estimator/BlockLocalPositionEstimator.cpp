@@ -507,10 +507,7 @@ void BlockLocalPositionEstimator::checkTimeouts()
 
 float BlockLocalPositionEstimator::agl()
 {
-	if ((_x(X_tz) - _x(X_z))>0)
-		return (_x(X_tz) - _x(X_z));
-	else 
-			return 0;
+	return _x(X_tz) - _x(X_z);
 }
 
 void BlockLocalPositionEstimator::detectDistanceSensors()
