@@ -598,7 +598,9 @@ then
 	if ver hwcmp PX4FMU_V2
 	then
 		# Check for flow sensor - as it is a background task, launch it last
+		trone start
 		px4flow start &
+		
 	fi
 
 	if ver hwcmp MINDPX_V2
