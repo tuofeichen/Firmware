@@ -570,7 +570,6 @@ void BlockLocalPositionEstimator::publishLocalPos()
 	if (PX4_ISFINITE(_x(X_x)) && PX4_ISFINITE(_x(X_y)) && PX4_ISFINITE(_x(X_z)) &&
 	    PX4_ISFINITE(_x(X_vx)) && PX4_ISFINITE(_x(X_vy))
 	    && PX4_ISFINITE(_x(X_vz))) {
-		_pub_lpos.get().timestamp = _timeStamp;
 		_pub_lpos.get().xy_valid = _canEstimateXY;
 		_pub_lpos.get().z_valid = _canEstimateZ;
 		_pub_lpos.get().v_xy_valid = _canEstimateXY;

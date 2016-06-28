@@ -479,6 +479,7 @@ void AttitudeEstimatorQ::task_main()
 		bool mocap_updated = false;
 		orb_check(_mocap_sub, &mocap_updated);
 
+		// here attitude get update 
 		if (vision_updated) {
 			orb_copy(ORB_ID(vision_position_estimate), _vision_sub, &_vision);
 			math::Quaternion q(_vision.q);
@@ -700,7 +701,7 @@ bool AttitudeEstimatorQ::init()
 	k.normalize();
 
 	// 'i' is Earth X axis (North) unit vector in body frame, orthogonal with 'k'
-	_mag = {0, -1 ,0};
+	// _mag = {0, -1 ,0};
 
 	Vector<3> i = (_mag - k * (_mag * k));
 	i.normalize();

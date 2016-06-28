@@ -43,6 +43,8 @@ void BlockLocalPositionEstimator::visionInit()
 int BlockLocalPositionEstimator::visionMeasure(Vector<float, n_y_vision> &y)
 {
 	y.setZero();
+	// TODO handle error and reinit for vision
+	// integration here (only update position)
 	y(Y_vision_x) = _sub_vision_pos.get().x;
 	y(Y_vision_y) = _sub_vision_pos.get().y;
 	y(Y_vision_z) = _sub_vision_pos.get().z;

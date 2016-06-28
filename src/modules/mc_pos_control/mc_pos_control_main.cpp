@@ -1587,7 +1587,7 @@ MulticopterPositionControl::task_main()
 
 				/* publish velocity setpoint */
 				if (_global_vel_sp_pub != nullptr) {
-					mavlink_log_info(&_mavlink_log_pub,"Publish global sp? ");
+					//mavlink_log_info(&_mavlink_log_pub,"Publish global sp? ");
 					orb_publish(ORB_ID(vehicle_global_velocity_setpoint), _global_vel_sp_pub, &_global_vel_sp);
 
 				} else {
@@ -1857,7 +1857,7 @@ MulticopterPositionControl::task_main()
 						
 						math::Vector<3> y_C(-sinf(_att_sp.yaw_body), cosf(_att_sp.yaw_body), 0.0f);
 
-						mavlink_log_info(&_mavlink_log_pub,"current yaw sp is %3.2f",(double)_att_sp.yaw_body);
+						// mavlink_log_info(&_mavlink_log_pub,"current yaw sp is %3.2f",(double)_att_sp.yaw_body);
 
 						if (fabsf(body_z(2)) > SIGMA) {
 							/* desired body_x axis, orthogonal to body_z */
