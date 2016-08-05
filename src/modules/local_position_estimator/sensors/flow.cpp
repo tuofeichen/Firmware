@@ -150,16 +150,18 @@ void BlockLocalPositionEstimator::flowCorrect()
 
 	if (beta > BETA_TABLE[n_y_flow]) {
 		if (_flowFault < FAULT_MINOR) {
-			//mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow fault,  beta %5.2f", double(beta));
+			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow fault,  beta %5.2f", double(beta));
 			_flowFault = FAULT_MINOR;
 		}
 
 	} else if (_flowFault) {
 		_flowFault = FAULT_NONE;
-		//mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow OK");
+		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow OK");
 	}
 
-	if (_flowFault < fault_lvl_disable) {
+	if ((_flowFault < fault_lvl_disable)&&(!_visionInitialized)) { // don't propagate if using VSLAM	
+		
+		mavlink_and_console_log_info(&mavlink_log_pub, "[flow] compensate");
 		Matrix<float, n_x, n_y_flow> K =
 			_P * C.transpose() * S_I;
 		_x += K * r;

@@ -275,6 +275,7 @@ void BlockLocalPositionEstimator::update()
 	bool homeUpdated = _sub_home.updated();
 	bool visionUpdated = _vision_on.get() && _sub_vision_pos.updated();
 	bool mocapUpdated = _sub_mocap.updated();
+
 	bool lidarUpdated = (_sub_lidar != NULL) && _sub_lidar->updated();
 	bool sonarUpdated = (_sub_sonar != NULL) && _sub_sonar->updated();
 
@@ -409,6 +410,7 @@ void BlockLocalPositionEstimator::update()
 	}
 
 	if (flowUpdated) {
+		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow updated!");
 		if (!_flowInitialized) {
 			flowInit();
 
@@ -421,6 +423,7 @@ void BlockLocalPositionEstimator::update()
 	}
 
 	if (visionUpdated) {
+		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision updated!");
 		if (!_visionInitialized) {
 			visionInit();
 
@@ -577,7 +580,12 @@ void BlockLocalPositionEstimator::publishLocalPos()
 		_pub_lpos.get().v_z_valid = _canEstimateZ;
 		_pub_lpos.get().x = _x(X_x); 	// north
 		_pub_lpos.get().y = _x(X_y);  	// east
+
+		// if (_canEstimateT) replaced by visual slam
 		_pub_lpos.get().z = (_alt_mode > 0)? (-agl()):(_x(X_z));	// down
+		// else
+			// _pub_lpos.get().z = -0.1;
+
 		_pub_lpos.get().vx = _x(X_vx);  // north
 		_pub_lpos.get().vy = _x(X_vy);  // east
 		_pub_lpos.get().vz = _x(X_vz); 	// down
@@ -688,14 +696,14 @@ void BlockLocalPositionEstimator::predict()
 		Matrix3f R_att(_sub_att.get().R);
 		Vector3f a(_sub_sensor.get().accelerometer_m_s2);
 		_u = R_att * a;
-		_u(U_az) += 9.81f; // add g
+		_u(U_az) += 9.81f; // add g (this should be fine right?)
 
 	} else {
 		_u = Vector3f(0, 0, 0);
 	}
 
 	// dynamics matrix
-	Matrix<float, n_x, n_x>  A; // state dynamics matrix
+	Matrix <float, n_x, n_x>  A; // state dynamics matrix
 	A.setZero();
 	// derivative of position is velocity
 	A(X_x, X_vx) = 1;
@@ -704,7 +712,8 @@ void BlockLocalPositionEstimator::predict()
 
 	// derivative of velocity is accelerometer acceleration
 	// (in input matrix) - bias (in body frame)
-	Matrix3f R_att(_sub_att.get().R);
+	Matrix3f R_att(_sub_att.get().R); // from entire attitude estimator
+
 	A(X_vx, X_bx) = -R_att(0, 0);
 	A(X_vx, X_by) = -R_att(0, 1);
 	A(X_vx, X_bz) = -R_att(0, 2);
@@ -729,6 +738,7 @@ void BlockLocalPositionEstimator::predict()
 	R.setZero();
 	R(U_ax, U_ax) = _accel_xy_stddev.get() * _accel_xy_stddev.get();
 	R(U_ay, U_ay) = _accel_xy_stddev.get() * _accel_xy_stddev.get();
+
 	R(U_az, U_az) = _accel_z_stddev.get() * _accel_z_stddev.get();
 
 	// process noise power matrix

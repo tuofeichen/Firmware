@@ -939,7 +939,7 @@ MulticopterPositionControl::control_offboard(float dt)
 			if (((_pos_sp(2) - _pos(2)) *(_pos_sp(2) - _pos(2))  > MAX_DISP) && (_pos_sp(2)>0)) // (ned setpoint always neg) limit the z max displacement
 			{			
 				mavlink_log_info(&_mavlink_log_pub,"[MPC] Warning, z pos is %4.2f, z setpoint is %4.2f",double(_pos(2)),double(_pos_sp(2)));
-				_pos_sp(2) = _pos_home(2); // go back to where offboard is enabled
+				// _pos_sp(2) = _pos(2); // go back to where offboard is enabled
 			}
 
 		} else if (_control_mode.flag_control_climb_rate_enabled && _pos_sp_triplet.current.velocity_valid) {
@@ -1441,7 +1441,7 @@ MulticopterPositionControl::task_main()
 					_pos_sp_triplet.current.velocity_valid &&
 					_pos_sp_triplet.current.position_valid) {
 					
-					mavlink_log_info(&_mavlink_log_pub, "are we in position tracking?");
+					// mavlink_log_info(&_mavlink_log_pub, "are we in position tracking?");
 
 					math::Vector<3> ft_vel(_pos_sp_triplet.current.vx, _pos_sp_triplet.current.vy, 0);
 
@@ -1587,7 +1587,7 @@ MulticopterPositionControl::task_main()
 
 				/* publish velocity setpoint */
 				if (_global_vel_sp_pub != nullptr) {
-					mavlink_log_info(&_mavlink_log_pub,"Publish global sp? ");
+					// mavlink_log_info(&_mavlink_log_pub,"Publish global sp? ");
 					orb_publish(ORB_ID(vehicle_global_velocity_setpoint), _global_vel_sp_pub, &_global_vel_sp);
 
 				} else {
@@ -1857,7 +1857,7 @@ MulticopterPositionControl::task_main()
 						
 						math::Vector<3> y_C(-sinf(_att_sp.yaw_body), cosf(_att_sp.yaw_body), 0.0f);
 
-						mavlink_log_info(&_mavlink_log_pub,"current yaw sp is %3.2f",(double)_att_sp.yaw_body);
+						// mavlink_log_info(&_mavlink_log_pub,"current yaw sp is %3.2f",(double)_att_sp.yaw_body);
 
 						if (fabsf(body_z(2)) > SIGMA) {
 							/* desired body_x axis, orthogonal to body_z */
@@ -1871,7 +1871,7 @@ MulticopterPositionControl::task_main()
 							body_x.normalize();
 
 						} else {
-							mavlink_log_info(&_mavlink_log_pub,"xy plane thrust?");
+							// mavlink_log_info(&_mavlink_log_pub,"xy plane thrust?");
 							/* desired thrust is in XY plane, set X downside to construct correct matrix,
 							 * but yaw component will not be used actually */
 							body_x.zero();

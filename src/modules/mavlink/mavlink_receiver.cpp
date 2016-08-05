@@ -89,6 +89,9 @@ __BEGIN_DECLS
 
 __END_DECLS
 
+
+// extern orb_advert_t mavlink_log_pub; //debug 
+
 static const float mg2ms2 = CONSTANTS_ONE_G / 1000.0f;
 
 MavlinkReceiver::MavlinkReceiver(Mavlink *parent) :
@@ -433,6 +436,10 @@ MavlinkReceiver::handle_message_command_int(mavlink_message_t *msg)
 void
 MavlinkReceiver::handle_message_optical_flow_rad(mavlink_message_t *msg)
 {
+
+	// orb_advert_t mavlink_log_pub;
+	// mavlink_and_console_log_info(&_mavlink_log_pub, "processing optical flow message");
+
 	/* optical flow */
 	mavlink_optical_flow_rad_t flow;
 	mavlink_msg_optical_flow_rad_decode(msg, &flow);
@@ -488,6 +495,7 @@ MavlinkReceiver::handle_message_optical_flow_rad(mavlink_message_t *msg)
 		orb_publish(ORB_ID(distance_sensor), _flow_distance_sensor_pub, &d);
 	}
 }
+
 
 void
 MavlinkReceiver::handle_message_hil_optical_flow(mavlink_message_t *msg)
@@ -577,6 +585,8 @@ MavlinkReceiver::handle_message_set_mode(mavlink_message_t *msg)
 void
 MavlinkReceiver::handle_message_distance_sensor(mavlink_message_t *msg)
 {
+	// warnx("distance Position Received.");
+	
 	/* distance sensor */
 	mavlink_distance_sensor_t dist_sensor;
 	mavlink_msg_distance_sensor_decode(msg, &dist_sensor);
@@ -878,12 +888,15 @@ MavlinkReceiver::handle_message_set_actuator_control_target(mavlink_message_t *m
 void
 MavlinkReceiver::handle_message_vision_position_estimate(mavlink_message_t *msg)
 {
+	// warnx("Vision Position Received.");
+	
 	mavlink_vision_position_estimate_t pos;
 	mavlink_msg_vision_position_estimate_decode(msg, &pos);
 
 	struct vision_position_estimate_s vision_position;
 	memset(&vision_position, 0, sizeof(vision_position));
 
+ 	
 	// Use the component ID to identify the vision sensor
 	vision_position.id = msg->compid;
 

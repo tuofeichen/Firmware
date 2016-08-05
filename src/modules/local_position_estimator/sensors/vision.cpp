@@ -6,7 +6,7 @@ extern orb_advert_t mavlink_log_pub;
 
 // required number of samples for sensor
 // to initialize
-static const uint32_t 		REQ_VISION_INIT_COUNT = 20;
+static const uint32_t 		REQ_VISION_INIT_COUNT = 10;
 static const uint32_t 		VISION_TIMEOUT =    500000;	// 0.5 s
 
 void BlockLocalPositionEstimator::visionInit()
@@ -84,13 +84,13 @@ void BlockLocalPositionEstimator::visionCorrect()
 
 	if (beta > BETA_TABLE[n_y_vision]) {
 		if (_visionFault < FAULT_MINOR) {
-			//mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision position fault, beta %5.2f", double(beta));
+			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision position fault, beta %5.2f", double(beta));
 			_visionFault = FAULT_MINOR;
 		}
 
 	} else if (_visionFault) {
 		_visionFault = FAULT_NONE;
-		//mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision position OK");
+		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision position OK");
 	}
 
 	// kalman filter correction if no fault
