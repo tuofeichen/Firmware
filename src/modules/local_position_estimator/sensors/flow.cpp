@@ -160,8 +160,8 @@ void BlockLocalPositionEstimator::flowCorrect()
 	}
 
 	if ((_flowFault < fault_lvl_disable)&&(!_visionInitialized)) { // don't propagate if using VSLAM	
-		
-		mavlink_and_console_log_info(&mavlink_log_pub, "[flow] compensate");
+	// if(_flowFault<fault_lvl_disable){
+		// mavlink_and_console_log_info(&mavlink_log_pub, "[flow] compensate");
 		Matrix<float, n_x, n_y_flow> K =
 			_P * C.transpose() * S_I;
 		_x += K * r;

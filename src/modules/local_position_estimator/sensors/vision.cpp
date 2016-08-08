@@ -6,7 +6,7 @@ extern orb_advert_t mavlink_log_pub;
 
 // required number of samples for sensor
 // to initialize
-static const uint32_t 		REQ_VISION_INIT_COUNT = 10;
+static const uint32_t 		REQ_VISION_INIT_COUNT = 5;
 static const uint32_t 		VISION_TIMEOUT =    500000;	// 0.5 s
 
 void BlockLocalPositionEstimator::visionInit()
@@ -59,7 +59,7 @@ void BlockLocalPositionEstimator::visionCorrect()
 	if (visionMeasure(y) != OK) { return; }
 
 	// make measurement relative to home
-	y -= _visionHome;
+	// y -= _visionHome; // this need to be cautious
 
 	// vision measurement matrix, measures position
 	Matrix<float, n_y_vision, n_x> C;

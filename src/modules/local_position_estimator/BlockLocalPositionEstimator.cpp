@@ -346,7 +346,6 @@ void BlockLocalPositionEstimator::update()
 		for (int i = 0; i < n_x; i++) {
 			_x(i) = 0;
 		}
-
 		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] reinit x");
 	}
 
