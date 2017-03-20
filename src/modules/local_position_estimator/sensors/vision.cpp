@@ -7,12 +7,14 @@ extern orb_advert_t mavlink_log_pub;
 // required number of samples for sensor to initialize.
 // This is a vision based position measurement so we assume
 // as soon as we get one measurement it is initialized.
-static const uint32_t 		REQ_VISION_INIT_COUNT = 1;
+static const uint32_t 		REQ_VISION_INIT_COUNT = 5;
 
 // We don't want to deinitialize it because
 // this will throw away a correction before it starts using the data so we
 // set the timeout to 0.5 seconds
-static const uint32_t 		VISION_TIMEOUT =    500000;	// 0.5 s
+static const uint64_t 		VISION_TIMEOUT 			=    500000;	// 0.5 s
+
+uint64_t 		VISION_OFFSET_TIME 	= 		0;
 
 void BlockLocalPositionEstimator::visionInit()
 {
@@ -37,6 +39,11 @@ void BlockLocalPositionEstimator::visionInit()
 		_sensorTimeout &= ~SENSOR_VISION;
 		_sensorFault &= ~SENSOR_VISION;
 
+
+		VISION_OFFSET_TIME = _time_last_vision_p -  _timeStamp;
+
+		// mavlink_and_console_log_info(&mavlink_log_pub, "%llu %llu", _time_last_vision_p - VISION_OFFSET_TIME, _timeStamp);
+
 		if (!_map_ref.init_done && _sub_vision_pos.get().xy_global) {
 			// initialize global origin using the visual estimator reference
 			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] global origin init (vision) : lat %6.2f lon %6.2f alt %5.1f m",
@@ -53,12 +60,17 @@ void BlockLocalPositionEstimator::visionInit()
 
 int BlockLocalPositionEstimator::visionMeasure(Vector<float, n_y_vision> &y)
 {
+
+
 	y.setZero();
 	y(Y_vision_x) = _sub_vision_pos.get().x;
 	y(Y_vision_y) = _sub_vision_pos.get().y;
 	y(Y_vision_z) = _sub_vision_pos.get().z;
 	_visionStats.update(y);
 	_time_last_vision_p = _sub_vision_pos.get().timestamp;
+
+	// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] fcu time %lld", 	_time_last_vision_p + VISION_OFFSET_TIME);
+
 	return OK;
 }
 
@@ -92,7 +104,6 @@ void BlockLocalPositionEstimator::visionCorrect()
 
 	if (_sub_vision_pos.get().epv > _vision_z_stddev.get()) {
 		R(Y_vision_z, Y_vision_z) = _sub_vision_pos.get().epv * _sub_vision_pos.get().epv;
-
 	} else {
 		R(Y_vision_z, Y_vision_z) = _vision_z_stddev.get() * _vision_z_stddev.get();
 	}
@@ -140,11 +151,13 @@ void BlockLocalPositionEstimator::visionCorrect()
 
 void BlockLocalPositionEstimator::visionCheckTimeout()
 {
-	if (_timeStamp - _time_last_vision_p > VISION_TIMEOUT) {
+		uint64_t timeElapse =  _time_last_vision_p - VISION_OFFSET_TIME;
+
+		if (((_timeStamp - timeElapse) > VISION_TIMEOUT)&&(_timeStamp - timeElapse <= VISION_OFFSET_TIME)) {
 		if (!(_sensorTimeout & SENSOR_VISION)) {
 			_sensorTimeout |= SENSOR_VISION;
 			_visionStats.reset();
-			mavlink_log_critical(&mavlink_log_pub, "[lpe] vision position timeout ");
+			mavlink_log_critical(&mavlink_log_pub, "[lpe] vision position timeout");
 		}
 	}
 }

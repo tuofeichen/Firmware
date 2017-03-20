@@ -41,8 +41,11 @@ int BlockLocalPositionEstimator::flowMeasure(Vector<float, n_y_flow> &y)
 		return -1;
 	}
 
+	// mavlink_and_console_log_info(&mavlink_log_pub, "Pass angle check");
+
 	// check for agl
 	if (agl() < flow_min_agl) {
+		// mavlink_and_console_log_info(&mavlink_log_pub, "Agl is %f _x(tz) %f _x(z) %f", double(agl()),double(_x(X_tz)),double(_x(X_z)));
 		return -1;
 	}
 
@@ -55,11 +58,11 @@ int BlockLocalPositionEstimator::flowMeasure(Vector<float, n_y_flow> &y)
 
 	// calculate range to center of image for flow
 	if (!(_estimatorInitialized & EST_TZ)) {
-		return -1;
+				return -1;
 	}
 
-	matrix::Eulerf euler = matrix::Quatf(_sub_att.get().q);
 
+	matrix::Eulerf euler = matrix::Quatf(_sub_att.get().q);
 	float d = agl() * cosf(euler.phi()) * cosf(euler.theta());
 
 	// optical flow in x, y axis
@@ -83,8 +86,8 @@ int BlockLocalPositionEstimator::flowMeasure(Vector<float, n_y_flow> &y)
 				     _sub_flow.get().gyro_y_rate_integral);
 	}
 
-	//warnx("flow x: %10.4f y: %10.4f gyro_x: %10.4f gyro_y: %10.4f d: %10.4f",
-	//double(flow_x_rad), double(flow_y_rad), double(gyro_x_rad), double(gyro_y_rad), double(d));
+	// warnx("flow x: %10.4f y: %10.4f gyro_x: %10.4f gyro_y: %10.4f d: %10.4f",
+	// double(flow_x_rad), double(flow_y_rad), double(gyro_x_rad), double(gyro_y_rad), double(d));
 
 	// compute velocities in body frame using ground distance
 	// note that the integral rates in the optical_flow uORB topic are RH rotations about body axes

@@ -85,7 +85,6 @@ void BlockLocalPositionEstimator::lidarCorrect()
 
 	if (cov < 1.0e-3f) {
 		R(0, 0) = _lidar_z_stddev.get() * _lidar_z_stddev.get();
-
 	} else {
 		R(0, 0) = cov;
 	}
@@ -93,6 +92,7 @@ void BlockLocalPositionEstimator::lidarCorrect()
 	// residual
 	Matrix<float, n_y_lidar, n_y_lidar> S_I = inv<float, n_y_lidar>((C * _P * C.transpose()) + R);
 	Vector<float, n_y_lidar> r = y - C * _x;
+
 	_pub_innov.get().hagl_innov = r(0);
 	_pub_innov.get().hagl_innov_var = R(0, 0);
 
@@ -101,7 +101,7 @@ void BlockLocalPositionEstimator::lidarCorrect()
 
 	if (beta > BETA_TABLE[n_y_lidar]) {
 		if (!(_sensorFault & SENSOR_LIDAR)) {
-			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] lidar fault,  beta %5.2f", double(beta));
+			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] lidar fault,  beta %5.2f SI %5.2f r %5.2f", double(beta),double(S_I(0,0)),double(r(0)));
 			_sensorFault |= SENSOR_LIDAR;
 		}
 
@@ -112,7 +112,6 @@ void BlockLocalPositionEstimator::lidarCorrect()
 		_sensorFault &= ~SENSOR_LIDAR;
 		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] lidar OK");
 	}
-
 	// kalman filter correction always
 	Matrix<float, n_x, n_y_lidar> K = _P * C.transpose() * S_I;
 	Vector<float, n_x> dx = K * r;

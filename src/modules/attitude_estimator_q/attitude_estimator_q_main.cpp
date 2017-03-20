@@ -594,6 +594,9 @@ bool AttitudeEstimatorQ::init()
 	Vector<3> k = -_accel;
 	k.normalize();
 
+	// manually init the position to be 90 degrees 
+	_mag = {0,-1,0};
+
 	// 'i' is Earth X axis (North) unit vector in body frame, orthogonal with 'k'
 	Vector<3> i = (_mag - k * (_mag * k));
 	i.normalize();

@@ -259,25 +259,25 @@ void BlockLocalPositionEstimator::update()
 	// selection param, but is really not helping outdoors
 	// right now.
 
-	// if (!_lastArmedState && armedState) {
+	if (!_lastArmedState && armedState) {
 
-	// 	// we just armed, we are at origin on the ground
-	// 	_x(X_x) = 0;
-	// 	_x(X_y) = 0;
-	// 	// reset Z or not? _x(X_z) = 0;
+		// we just armed, we are at origin on the ground
+		_x(X_x) = 0;
+		_x(X_y) = 0;
+		// reset Z or not? _x(X_z) = 0;
 
-	// 	// we aren't moving, all velocities are zero
-	// 	_x(X_vx) = 0;
-	// 	_x(X_vy) = 0;
-	// 	_x(X_vz) = 0;
+		// we aren't moving, all velocities are zero
+		_x(X_vx) = 0;
+		_x(X_vy) = 0;
+		_x(X_vz) = 0;
 
-	// 	// assume we are on the ground, so terrain alt is local alt
-	// 	_x(X_tz) = _x(X_z);
+		// assume we are on the ground, so terrain alt is local alt
+		_x(X_tz) = _x(X_z);
 
-	// 	// reset lowpass filter as well
-	// 	_xLowPass.setState(_x);
-	// 	_aglLowPass.setState(0);
-	// }
+		// reset lowpass filter as well
+		_xLowPass.setState(_x);
+		_aglLowPass.setState(0);
+	}
 
 	_lastArmedState = armedState;
 
@@ -305,8 +305,7 @@ void BlockLocalPositionEstimator::update()
 	bool mocapUpdated = _sub_mocap.updated();
 	bool lidarUpdated = (_sub_lidar != nullptr) && _sub_lidar->updated();
 	bool sonarUpdated = (_sub_sonar != nullptr) && _sub_sonar->updated();
-	bool landUpdated = landed()
-			   && ((_timeStamp - _time_last_land) > 1.0e6f / LAND_RATE); // throttle rate
+	bool landUpdated = landed() && ((_timeStamp - _time_last_land) > 1.0e6f / LAND_RATE); // throttle rate
 
 	// get new data
 	updateSubscriptions();
@@ -327,10 +326,11 @@ void BlockLocalPositionEstimator::update()
 	if (_estimatorInitialized & EST_XY) {
 		// if valid and gps has timed out, set to not valid
 		if (!vxy_stddev_ok && (_sensorTimeout & SENSOR_GPS)) {
-			_estimatorInitialized &= ~EST_XY;
+					_estimatorInitialized &= ~EST_XY;
 		}
 
 	} else {
+
 		if (vxy_stddev_ok) {
 			if (!(_sensorTimeout & SENSOR_GPS)
 			    || !(_sensorTimeout & SENSOR_FLOW)
@@ -346,6 +346,8 @@ void BlockLocalPositionEstimator::update()
 	// is z valid?
 	bool z_stddev_ok = sqrtf(_P(X_z, X_z)) < _z_pub_thresh.get();
 
+
+
 	if (_estimatorInitialized & EST_Z) {
 		// if valid and baro has timed out, set to not valid
 		if (!z_stddev_ok && (_sensorTimeout & SENSOR_BARO)) {
@@ -354,6 +356,7 @@ void BlockLocalPositionEstimator::update()
 
 	} else {
 		if (z_stddev_ok) {
+			mavlink_and_console_log_info(&mavlink_log_pub, "_estimator init z!");
 			_estimatorInitialized |= EST_Z;
 		}
 	}
@@ -368,9 +371,11 @@ void BlockLocalPositionEstimator::update()
 
 	} else {
 		if (tz_stddev_ok) {
+			mavlink_and_console_log_info(&mavlink_log_pub, "_estimator Initialize tz!");
 			_estimatorInitialized |= EST_TZ;
 		}
 	}
+
 
 	// check timeouts
 	checkTimeouts();
@@ -456,7 +461,8 @@ void BlockLocalPositionEstimator::update()
 		}
 	}
 
-	if (baroUpdated) {
+	// stop baro update when lidar is  initialized
+	if (baroUpdated ) {
 		if (_sensorTimeout & SENSOR_BARO) {
 			baroInit();
 
@@ -468,7 +474,6 @@ void BlockLocalPositionEstimator::update()
 	if (lidarUpdated) {
 		if (_sensorTimeout & SENSOR_LIDAR) {
 			lidarInit();
-
 		} else {
 			lidarCorrect();
 		}
@@ -495,7 +500,6 @@ void BlockLocalPositionEstimator::update()
 	if (visionUpdated) {
 		if (_sensorTimeout & SENSOR_VISION) {
 			visionInit();
-
 		} else {
 			visionCorrect();
 		}
