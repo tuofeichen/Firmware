@@ -94,7 +94,7 @@ int BlockLocalPositionEstimator::flowMeasure(Vector<float, n_y_flow> &y)
 	// compute velocities in camera frame using ground distance
 	// assume camera frame is body frame
 	Vector3f delta_b(
-		-(flow_x_rad - gyro_x_rad)*d,
+		-(flow_x_rad - gyro_x_rad)*d, // calibration
 		-(flow_y_rad - gyro_y_rad)*d,
 		0);
 
@@ -103,8 +103,8 @@ int BlockLocalPositionEstimator::flowMeasure(Vector<float, n_y_flow> &y)
 	Vector3f delta_n = R_nb * delta_b;
 
 	// flow integration
-	_flowX += delta_n(0);
-	_flowY += delta_n(1);
+	_flowX += delta_n(0)*(-0.24f*d+1.25f); 
+	_flowY += delta_n(1)*(-0.24f*d+1.25f);
 
 	// measurement
 	y(Y_flow_x) = _flowX;
@@ -122,6 +122,7 @@ void BlockLocalPositionEstimator::flowCorrect()
 {
 	// measure flow
 	Vector<float, n_y_flow> y;
+	// int visionWeight = 2;
 
 	if (flowMeasure(y) != OK) { return; }
 
@@ -133,10 +134,24 @@ void BlockLocalPositionEstimator::flowCorrect()
 
 	Matrix<float, n_y_flow, n_y_flow> R;
 	R.setZero();
+
+	// if (_visionInitialized){
+
+	// R(Y_flow_x, Y_flow_x) =
+	// 	_flow_xy_stddev.get() * _flow_xy_stddev.get() * visionWeight; // decrease flow weight for vision
+	// R(Y_flow_y, Y_flow_y) =
+	// 	_flow_xy_stddev.get() * _flow_xy_stddev.get() * visionWeight;
+
+	// }
+	// else
+	// {
+	
 	R(Y_flow_x, Y_flow_x) =
 		_flow_xy_stddev.get() * _flow_xy_stddev.get();
 	R(Y_flow_y, Y_flow_y) =
 		_flow_xy_stddev.get() * _flow_xy_stddev.get();
+
+	// }
 
 	// residual
 	Vector<float, 2> r = y - C * _x;
@@ -150,13 +165,13 @@ void BlockLocalPositionEstimator::flowCorrect()
 
 	if (beta > BETA_TABLE[n_y_flow]) {
 		if (_flowFault < FAULT_MINOR) {
-			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow fault,  beta %5.2f", double(beta));
+			// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow fault,  beta %5.2f", double(beta));
 			_flowFault = FAULT_MINOR;
 		}
 
 	} else if (_flowFault) {
 		_flowFault = FAULT_NONE;
-		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow OK");
+		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow OK");
 	}
 
 	if ((_flowFault < fault_lvl_disable)&&(!_visionInitialized)) { // don't propagate if using VSLAM	

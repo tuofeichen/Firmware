@@ -483,14 +483,14 @@ void AttitudeEstimatorQ::task_main()
 			math::Quaternion q(_vision.q);
 
 			math::Matrix<3, 3> Rvis = q.to_dcm(); // this is a DCM
-			
+
 			math::Vector<3> v(1.0f, 0.0f, 0.0f); // what's this number?!
 			math::Vector<3> rpy = q.to_euler();
 
 			// mavlink_and_console_log_critical(&_mavlink_log_pub,"[attq] rpy %4.2f %4.2f,%4.2f", (double)rpy(0),(double)rpy(1),(double)rpy(2));
 
 			// math::Vector<3> v(0.0f, -1.0f, 0.0f); // what's this number?!
-			
+
 			// Rvis is Rwr (robot respect to world) while v is respect to world.
 			// Hence Rvis must be transposed having (Rwr)' * Vw
 			// Rrw * Vw = vn. This way we have consistency
@@ -527,7 +527,7 @@ void AttitudeEstimatorQ::task_main()
 
 		// Check for timeouts on data
 		if (_ext_hdg_mode == 1) {
-	
+
 			_ext_hdg_good = _vision.timestamp_boot > 0 && (hrt_elapsed_time(&_vision.timestamp_boot) < 500000);
 
 		} else if (_ext_hdg_mode == 2) {
@@ -768,10 +768,10 @@ bool AttitudeEstimatorQ::update(float dt)
 		if (_ext_hdg_mode == 1) {
 
 			// mavlink_and_console_log_critical(&_mavlink_log_pub,"[att q] External heading correction " );
-			
+
 			// Vision heading correction
 			// Project heading to global frame and extract XY component
-			
+
 			Vector<3> vision_hdg_earth = _q.conjugate(_vision_hdg); // what changes
 
 			float vision_hdg_err = _wrap_pi(atan2f(vision_hdg_earth(1), vision_hdg_earth(0)));

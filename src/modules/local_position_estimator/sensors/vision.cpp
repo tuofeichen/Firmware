@@ -22,6 +22,11 @@ void BlockLocalPositionEstimator::visionInit()
 	// increament sums for mean
 	if (_visionStats.getCount() > REQ_VISION_INIT_COUNT) {
 		_visionHome = _visionStats.getMean();
+		
+		_visionX = _x(X_x);
+		_visionY = _x(X_y);
+		_visionZ = _x(X_z);
+
 		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision position init: "
 					     "%5.2f %5.2f %5.2f m std %5.2f %5.2f %5.2f m",
 					     double(_visionStats.getMean()(0)),
@@ -55,8 +60,22 @@ void BlockLocalPositionEstimator::visionCorrect()
 {
 	// measure
 	Vector<float, n_y_vision> y;
+	Vector<float, n_y_vision> dy;
 
 	if (visionMeasure(y) != OK) { return; }
+	
+	dy = y - _y_prev; 
+	_y_prev = y; // note down previous measurement
+	
+	_visionX += dy(0); 
+	_visionY += dy(1);
+	_visionZ += dy(2);
+
+	// y(0) = _visionX;
+	// y(1) = _visionY;
+	// y(2) = _visionZ;
+
+	// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] z estimate is %4.2f", (double)y(2));
 
 	// make measurement relative to home
 	// y -= _visionHome; // this need to be cautious
@@ -90,7 +109,7 @@ void BlockLocalPositionEstimator::visionCorrect()
 
 	} else if (_visionFault) {
 		_visionFault = FAULT_NONE;
-		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision position OK");
+		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision position OK");
 	}
 
 	// kalman filter correction if no fault
@@ -99,6 +118,13 @@ void BlockLocalPositionEstimator::visionCorrect()
 		_x += K * r;
 		_P -= K * C * _P;
 	}
+	else 
+	{	
+		_visionX = _x(X_x);
+		_visionY = _x(X_y);
+		_visionZ = _x(X_z);
+	}
+
 }
 
 void BlockLocalPositionEstimator::visionCheckTimeout()

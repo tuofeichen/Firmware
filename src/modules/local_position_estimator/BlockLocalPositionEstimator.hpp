@@ -368,6 +368,13 @@ private:
 	perf_counter_t _err_perf;
 
 	// state space
+	Vector<float,n_y_vision> _y_prev; // stored vision vector
+	// Vector<float,n_y_vision> _x_prev;
+	float _visionX; // vision integration
+	float _visionY;
+	float _visionZ;
+
+
 	Vector<float, n_x>  _x; // state vector
 	Vector<float, n_u>  _u; // input vector
 	Matrix<float, n_x, n_x>  _P; // state covariance matrix

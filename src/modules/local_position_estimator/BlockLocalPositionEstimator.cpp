@@ -138,7 +138,7 @@ BlockLocalPositionEstimator::BlockLocalPositionEstimator() :
 	_flowX(0),
 	_flowY(0),
 	_flowMeanQual(0),
-	
+
 
 	// status
 	_canEstimateXY(false),
@@ -163,6 +163,11 @@ BlockLocalPositionEstimator::BlockLocalPositionEstimator() :
 	_interval_perf(),
 	_err_perf(),
 
+	_y_prev(),
+	// _x_prev(),
+	_visionX(0),
+	_visionY(0),
+	_visionZ(0),
 	// kf matrices
 	_x(), _u(), _P()
 {
@@ -184,6 +189,8 @@ BlockLocalPositionEstimator::BlockLocalPositionEstimator() :
 
 	// initialize P, x, u
 	initP();
+	_y_prev.setZero();
+	// _x_prev.setZero();
 	_x.setZero();
 	_u.setZero();
 	_flowX = 0;
@@ -294,7 +301,7 @@ void BlockLocalPositionEstimator::update()
 	}
 
 
- 
+
 	// determine if we should start estimating
 	_canEstimateZ =
 		(_baroInitialized && _baroFault < fault_lvl_disable);
@@ -425,11 +432,11 @@ void BlockLocalPositionEstimator::update()
 		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] vision updated!");
 		if (!_visionInitialized) {
 			visionInit();
-
 		} else {
 			visionCorrect();
 		}
 	}
+
 
 	if (mocapUpdated) {
 		if (!_mocapInitialized) {
@@ -511,7 +518,7 @@ float BlockLocalPositionEstimator::agl()
 {
 	if ((_x(X_tz) - _x(X_z))>0)
 		return (_x(X_tz) - _x(X_z));
-	else 
+	else
 			return 0;
 }
 

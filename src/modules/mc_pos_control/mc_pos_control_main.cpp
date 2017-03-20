@@ -93,7 +93,7 @@
 #define MIN_DIST		0.01f
 #define MANUAL_THROTTLE_MAX_MULTICOPTER	0.9f
 #define ONE_G	9.8066f
-#define MAX_DISP 2
+#define MAX_DISP 5
 
 
 /**
