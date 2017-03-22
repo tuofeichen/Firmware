@@ -106,8 +106,8 @@ void BlockLocalPositionEstimator::lidarCorrect()
 		}
 
 		// abort correction
-		return;
-
+		// return;
+		
 	} else if (_sensorFault & SENSOR_LIDAR) {
 		_sensorFault &= ~SENSOR_LIDAR;
 		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] lidar OK");

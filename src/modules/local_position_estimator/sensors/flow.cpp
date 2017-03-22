@@ -106,6 +106,8 @@ int BlockLocalPositionEstimator::flowMeasure(Vector<float, n_y_flow> &y)
 	y(Y_flow_vx) = delta_n(0) / dt_flow;
 	y(Y_flow_vy) = delta_n(1) / dt_flow;
 
+	// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow vx %5.2f flow vy %5.2f", double(y(Y_flow_vx)),double(y(Y_flow_vy)));
+
 	_flowQStats.update(Scalarf(_sub_flow.get().quality));
 
 	return OK;
@@ -195,9 +197,12 @@ void BlockLocalPositionEstimator::flowCorrect()
 	}
 
 	if (!(_sensorFault & SENSOR_FLOW)) {
+
+
 		Matrix<float, n_x, n_y_flow> K =
 			_P * C.transpose() * S_I;
 		Vector<float, n_x> dx = K * r;
+		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow dx %4.3f,%4.3f,%4.3f,%4.3f",double(dx(X_x)),double(dx(X_y)),double(dx(X_vx)),double(dx(X_vy)));
 		_x += dx;
 		_P -= K * C * _P;
 

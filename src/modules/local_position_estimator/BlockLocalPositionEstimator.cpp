@@ -604,6 +604,7 @@ void BlockLocalPositionEstimator::publishLocalPos()
 		_pub_lpos.get().z_valid = _estimatorInitialized & EST_Z;
 		_pub_lpos.get().v_xy_valid = _estimatorInitialized & EST_XY;
 		_pub_lpos.get().v_z_valid = _estimatorInitialized & EST_Z;
+
 		_pub_lpos.get().x = xLP(X_x); 	// north
 		_pub_lpos.get().y = xLP(X_y);  	// east
 
@@ -617,7 +618,6 @@ void BlockLocalPositionEstimator::publishLocalPos()
 		_pub_lpos.get().vx = xLP(X_vx); // north
 		_pub_lpos.get().vy = xLP(X_vy); // east
 		_pub_lpos.get().vz = xLP(X_vz); // down
-
 		_pub_lpos.get().yaw = _eul(2);
 		_pub_lpos.get().xy_global = _estimatorInitialized & EST_XY;
 		_pub_lpos.get().z_global = !(_sensorTimeout & SENSOR_BARO);
@@ -809,6 +809,10 @@ void BlockLocalPositionEstimator::predict()
 	_u = _R_att * a;
 	_u(U_az) += 9.81f; // add g
 
+
+// disabled prediction
+	_u = Vector3f(0,0,0);
+
 	// update state space based on new states
 	updateSSStates();
 
@@ -817,6 +821,7 @@ void BlockLocalPositionEstimator::predict()
 	// TODO move rk4 algorithm to matrixlib
 	// https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
 	float h = getDt();
+
 	Vector<float, n_x> k1, k2, k3, k4;
 	k1 = dynamics(0, _x, _u);
 	k2 = dynamics(h / 2, _x + k1 * h / 2, _u);
@@ -861,6 +866,7 @@ void BlockLocalPositionEstimator::predict()
 		bz = BIAS_MAX * bz / std::abs(bz);
 		dx(X_bz) = bz - _x(X_bz);
 	}
+
 
 	// propagate
 	_x += dx;
