@@ -7,11 +7,13 @@ extern orb_advert_t mavlink_log_pub;
 
 // required number of samples for sensor
 // to initialize
-static const uint32_t 		REQ_FLOW_INIT_COUNT = 10;
+static const uint32_t 		REQ_FLOW_INIT_COUNT = 5;
 static const uint32_t 		FLOW_TIMEOUT = 1000000;	// 1 s
 
 // minimum flow altitude
 static const float flow_min_agl = 0.3;
+
+int flow_last_invalid = REQ_FLOW_INIT_COUNT;
 
 void BlockLocalPositionEstimator::flowInit()
 {
@@ -31,6 +33,7 @@ void BlockLocalPositionEstimator::flowInit()
 					     int(_flowQStats.getStdDev()(0)));
 		_sensorTimeout &= ~SENSOR_FLOW;
 		_sensorFault &= ~SENSOR_FLOW;
+		flow_last_invalid = REQ_FLOW_INIT_COUNT;
 	}
 }
 
@@ -106,8 +109,6 @@ int BlockLocalPositionEstimator::flowMeasure(Vector<float, n_y_flow> &y)
 	y(Y_flow_vx) = delta_n(0) / dt_flow;
 	y(Y_flow_vy) = delta_n(1) / dt_flow;
 
-	// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow vx %5.2f flow vy %5.2f", double(y(Y_flow_vx)),double(y(Y_flow_vy)));
-
 	_flowQStats.update(Scalarf(_sub_flow.get().quality));
 
 	return OK;
@@ -119,6 +120,9 @@ void BlockLocalPositionEstimator::flowCorrect()
 	Vector<float, n_y_flow> y;
 
 	if (flowMeasure(y) != OK) { return; }
+
+	// else
+	// 	mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow vx vy %5.2f %5.2f", double(y(Y_flow_vx)),double(y(Y_flow_vy)));
 
 	// flow measurement matrix and noise matrix
 	Matrix<float, n_y_flow, n_x> C;
@@ -172,7 +176,8 @@ void BlockLocalPositionEstimator::flowCorrect()
 	R(Y_flow_vy, Y_flow_vy) = R(Y_flow_vx, Y_flow_vx);
 
 	// residual
-	Vector<float, 2> r = y - C * _x;
+	Vector<float, 2> r = y - C * _x; // does matter what the prev state is (how big the discrepancy in velocity)
+
 	_pub_innov.get().flow_innov[0] = r(0);
 	_pub_innov.get().flow_innov[1] = r(1);
 	_pub_innov.get().flow_innov_var[0] = R(0, 0);
@@ -198,11 +203,21 @@ void BlockLocalPositionEstimator::flowCorrect()
 
 	if (!(_sensorFault & SENSOR_FLOW)) {
 
-
 		Matrix<float, n_x, n_y_flow> K =
 			_P * C.transpose() * S_I;
 		Vector<float, n_x> dx = K * r;
+
 		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] flow dx %4.3f,%4.3f,%4.3f,%4.3f",double(dx(X_x)),double(dx(X_y)),double(dx(X_vx)),double(dx(X_vy)));
+		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] === state vx vy %4.3f,%4.3f",double(_x(X_vx)),double(_x(X_vy)));
+
+		// suppress state jump
+		if (flow_last_invalid)
+		{
+				dx(X_x) = 0; // don't propagate position if last flow is invalid, just correct velocity
+				dx(X_y) = 0;
+				flow_last_invalid --;
+		}
+
 		_x += dx;
 		_P -= K * C * _P;
 

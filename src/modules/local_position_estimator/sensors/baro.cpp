@@ -88,8 +88,11 @@ void BlockLocalPositionEstimator::baroCorrect()
 	// kalman filter correction always
 	Matrix<float, n_x, n_y_baro> K = _P * C.transpose() * S_I;
 	Vector<float, n_x> dx = K * r;
+
+	// no baro correction, bit of a hacky way to do it?.
 	_x += dx;
 	_P -= K * C * _P;
+
 }
 
 void BlockLocalPositionEstimator::baroCheckTimeout()

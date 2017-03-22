@@ -62,7 +62,7 @@ void BlockLocalPositionEstimator::lidarCorrect()
 {
 	// measure lidar
 	Vector<float, n_y_lidar> y;
-
+	// float dP = 0.0f;
 	if (lidarMeasure(y) != OK) { return; }
 
 	// account for leaning
@@ -104,10 +104,8 @@ void BlockLocalPositionEstimator::lidarCorrect()
 			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] lidar fault,  beta %5.2f SI %5.2f r %5.2f", double(beta),double(S_I(0,0)),double(r(0)));
 			_sensorFault |= SENSOR_LIDAR;
 		}
-
 		// abort correction
 		// return;
-		
 	} else if (_sensorFault & SENSOR_LIDAR) {
 		_sensorFault &= ~SENSOR_LIDAR;
 		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] lidar OK");
@@ -116,7 +114,11 @@ void BlockLocalPositionEstimator::lidarCorrect()
 	Matrix<float, n_x, n_y_lidar> K = _P * C.transpose() * S_I;
 	Vector<float, n_x> dx = K * r;
 	_x += dx;
+
+	// dP = (K*C*_P) (X_z,X_z);
 	_P -= K * C * _P;
+	// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] P %4.3f, dP %4.3f", double(_P(X_z,X_z)),double(dP));
+
 }
 
 void BlockLocalPositionEstimator::lidarCheckTimeout()

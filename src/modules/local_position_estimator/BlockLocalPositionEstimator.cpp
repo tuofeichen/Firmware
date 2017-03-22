@@ -345,7 +345,7 @@ void BlockLocalPositionEstimator::update()
 
 	// is z valid?
 	bool z_stddev_ok = sqrtf(_P(X_z, X_z)) < _z_pub_thresh.get();
-
+	// mavlink_and_console_log_info(&mavlink_log_pub, "std of z is %4.3f", double(sqrt(_P(X_z,X_z))));
 
 
 	if (_estimatorInitialized & EST_Z) {
@@ -493,7 +493,14 @@ void BlockLocalPositionEstimator::update()
 			flowInit();
 
 		} else {
+
+			// double x_prev = double(_x(X_x));
+			// double y_prev = double(_x(X_y));
+
 			flowCorrect();
+
+			// mavlink_and_console_log_info(&mavlink_log_pub, "before flow %4.3f %4.3f after %4.3f %4.3f",x_prev,y_prev,double(_x(X_x)),double(_x(X_y)));
+
 		}
 	}
 
@@ -811,7 +818,7 @@ void BlockLocalPositionEstimator::predict()
 
 
 // disabled prediction
-	_u = Vector3f(0,0,0);
+	// _u = Vector3f(0,0,0);
 
 	// update state space based on new states
 	updateSSStates();
@@ -887,6 +894,7 @@ void BlockLocalPositionEstimator::predict()
 	}
 
 	_P += dP;
+	// mavlink_and_console_log_info(&mavlink_log_pub, "[acc comp] P %4.3f, dP %4.3f", double(_P(X_z,X_z)),double(dP(X_z,X_z)));
 	_xLowPass.update(_x);
 	_aglLowPass.update(agl());
 }
