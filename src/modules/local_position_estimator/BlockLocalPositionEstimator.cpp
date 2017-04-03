@@ -709,6 +709,7 @@ void BlockLocalPositionEstimator::publishGlobalPos()
 		_pub_gpos.get().terrain_alt_valid = _estimatorInitialized & EST_TZ;
 		_pub_gpos.get().dead_reckoning = !(_estimatorInitialized & EST_XY);
 		_pub_gpos.get().pressure_alt = _sub_sensor.get().baro_alt_meter;
+		// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe]　estimator confidance %5.2f", double(_pub_lpos.get().eph));
 		_pub_gpos.update();
 	}
 }
