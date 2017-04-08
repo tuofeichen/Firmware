@@ -16,7 +16,7 @@ set(config_module_list
 	drivers/px4fmu
 	drivers/boards/aerofc-v1
 	drivers/tap_esc
-	drivers/mpu6500
+	drivers/mpu9250
 	drivers/ms5611
 	drivers/hmc5883
 	drivers/gps
@@ -112,8 +112,6 @@ set(config_module_list
 )
 
 set(config_extra_builtin_cmds
-	serdis
-	sercon
 	)
 
 set(config_io_board
@@ -124,15 +122,3 @@ set(config_extra_libs
 
 set(config_io_extra_libs
 	)
-
-add_custom_target(sercon)
-set_target_properties(sercon PROPERTIES
-	PRIORITY "SCHED_PRIORITY_DEFAULT"
-	MAIN "sercon"
-	STACK_MAIN "2048")
-
-add_custom_target(serdis)
-set_target_properties(serdis PROPERTIES
-	PRIORITY "SCHED_PRIORITY_DEFAULT"
-	MAIN "serdis"
-	STACK_MAIN "2048")
