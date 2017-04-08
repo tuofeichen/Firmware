@@ -114,7 +114,6 @@ void BlockLocalPositionEstimator::lidarCorrect()
 	Matrix<float, n_x, n_y_lidar> K = _P * C.transpose() * S_I;
 	Vector<float, n_x> dx = K * r;
 	_x += dx;
-
 	// dP = (K*C*_P) (X_z,X_z);
 	_P -= K * C * _P;
 	// mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] P %4.3f, dP %4.3f", double(_P(X_z,X_z)),double(dP));

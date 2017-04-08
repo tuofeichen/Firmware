@@ -264,7 +264,8 @@ void BlockLocalPositionEstimator::update()
 		// we just armed, we are at origin on the ground
 		_x(X_x) = 0;
 		_x(X_y) = 0;
-		// reset Z or not? _x(X_z) = 0;
+		_x(X_z) = 0;
+		// reset Z or not?
 
 		// we aren't moving, all velocities are zero
 		_x(X_vx) = 0;
@@ -325,7 +326,11 @@ void BlockLocalPositionEstimator::update()
 
 	if (_estimatorInitialized & EST_XY) {
 		// if valid and gps has timed out, set to not valid
-		if (!vxy_stddev_ok && (_sensorTimeout & SENSOR_GPS)) {
+		// if (vxy_stddev_ok && (_sensorTimeout & SENSOR_GPS)) {
+		// 			_estimatorInitialized &= ~EST_XY;
+		// }
+
+		if (vxy_stddev_ok && (_sensorTimeout & SENSOR_FLOW)) {
 					_estimatorInitialized &= ~EST_XY;
 		}
 
