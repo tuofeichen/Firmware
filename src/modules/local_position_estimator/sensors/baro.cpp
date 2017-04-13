@@ -89,7 +89,16 @@ void BlockLocalPositionEstimator::baroCorrect()
 	Matrix<float, n_x, n_y_baro> K = _P * C.transpose() * S_I;
 	Vector<float, n_x> dx = K * r;
 
-	// no baro correction, bit of a hacky way to do it?.
+	if (!(_estimatorInitialized & EST_XY))  { // don't bother using baro if on the ground
+		dx(X_x) = 0;
+		dx(X_vx) = 0;
+		dx(X_y) = 0;
+		dx(X_vy) = 0;
+		dx(X_z) = 0;
+		dx(X_vz) = 0;
+		dx(X_tz) = 0;
+	}
+	
 	_x += dx;
 	_P -= K * C * _P;
 

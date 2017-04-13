@@ -13,7 +13,7 @@ static const uint32_t 		EST_STDDEV_XY_VALID = 2.0; // 2.0 m
 static const uint32_t 		EST_STDDEV_Z_VALID = 2.0; // 2.0 m
 static const uint32_t 		EST_STDDEV_TZ_VALID = 2.0; // 2.0 m
 
-static const float P_MAX = 1.0e6f; // max allowed value in state covariance
+static const float P_MAX = 1.0f; // max allowed value in state covariance
 static const float LAND_RATE = 10.0f; // rate of land detector correction
 
 static const char *msg_label = "[lpe] ";  // rate of land detector correction
@@ -330,10 +330,12 @@ void BlockLocalPositionEstimator::update()
 		// 			_estimatorInitialized &= ~EST_XY;
 		// }
 
-		if (vxy_stddev_ok && (_sensorTimeout & SENSOR_FLOW)) {
+// add vision later
+		if (_sensorTimeout & SENSOR_FLOW) {
+					mavlink_and_console_log_info(&mavlink_log_pub, "xy timeout");
 					_estimatorInitialized &= ~EST_XY;
 		}
-
+		//
 	} else {
 
 		if (vxy_stddev_ok) {
@@ -621,7 +623,7 @@ void BlockLocalPositionEstimator::publishLocalPos()
 		_pub_lpos.get().y = xLP(X_y);  	// east
 
 		if (_fusion.get() & FUSE_PUB_AGL_Z) {
-			_pub_lpos.get().z = -_aglLowPass.getState(); // agl
+			_pub_lpos.get().z = -agl(); // agl
 
 		} else {
 			_pub_lpos.get().z = xLP(X_z); 	// down
@@ -632,11 +634,11 @@ void BlockLocalPositionEstimator::publishLocalPos()
 		_pub_lpos.get().vz = xLP(X_vz); // down
 		_pub_lpos.get().yaw = _eul(2);
 		_pub_lpos.get().xy_global = _estimatorInitialized & EST_XY;
-		_pub_lpos.get().z_global = !(_sensorTimeout & SENSOR_BARO);
+		_pub_lpos.get().z_global  = !(_sensorTimeout & SENSOR_BARO);
 		_pub_lpos.get().ref_timestamp = _timeStamp;
-		_pub_lpos.get().ref_lat = _map_ref.lat_rad * 180 / M_PI;
-		_pub_lpos.get().ref_lon = _map_ref.lon_rad * 180 / M_PI;
-		_pub_lpos.get().ref_alt = _altOrigin;
+		_pub_lpos.get().ref_lat   = _map_ref.lat_rad * 180 / M_PI;
+		_pub_lpos.get().ref_lon   = _map_ref.lon_rad * 180 / M_PI;
+		_pub_lpos.get().ref_alt   = _altOrigin;
 		_pub_lpos.get().dist_bottom = _aglLowPass.getState();
 		_pub_lpos.get().dist_bottom_rate = - xLP(X_vz);
 		_pub_lpos.get().surface_bottom_timestamp = _timeStamp;
@@ -664,7 +666,8 @@ void BlockLocalPositionEstimator::publishEstimatorStatus()
 	_pub_est_status.get().nan_flags = 0;
 	_pub_est_status.get().health_flags = _sensorFault;
 	_pub_est_status.get().timeout_flags = _sensorTimeout;
-	_pub_est_status.get().pos_horiz_accuracy = _pub_gpos.get().eph;
+	// need to know horizontal velocity accuracy
+	_pub_est_status.get().pos_horiz_accuracy = sqrtf(_P(X_vx, X_vx) + _P(X_vy, X_vy)); //_pub_gpos.get().eph;
 	_pub_est_status.get().pos_vert_accuracy = _pub_gpos.get().epv;
 
 	_pub_est_status.update();
@@ -822,7 +825,6 @@ void BlockLocalPositionEstimator::predict()
 	_u = _R_att * a;
 	_u(U_az) += 9.81f; // add g
 
-
 // disabled prediction
 	// _u = Vector3f(0,0,0);
 
@@ -843,11 +845,13 @@ void BlockLocalPositionEstimator::predict()
 	Vector<float, n_x> dx = (k1 + k2 * 2 + k3 * 2 + k4) * (h / 6);
 
 	// don't integrate position if no valid xy data
-	if (!(_estimatorInitialized & EST_XY))  {
+	if (!(_estimatorInitialized & EST_XY) )  {
 		dx(X_x) = 0;
 		dx(X_vx) = 0;
 		dx(X_y) = 0;
 		dx(X_vy) = 0;
+		dx(X_z) = 0;
+		dx(X_tz) = 0; // if cannot estimate xy don't update z as well
 	}
 
 	// don't integrate z if no valid z data
@@ -880,7 +884,6 @@ void BlockLocalPositionEstimator::predict()
 		dx(X_bz) = bz - _x(X_bz);
 	}
 
-
 	// propagate
 	_x += dx;
 	Matrix<float, n_x, n_x> dP = (_A * _P + _P * _A.transpose() +
@@ -891,7 +894,6 @@ void BlockLocalPositionEstimator::predict()
 		if (_P(i, i) > P_MAX) {
 			// if diagonal element greater than max, stop propagating
 			dP(i, i) = 0;
-
 			for (int j = 0; j < n_x; j++) {
 				dP(i, j) = 0;
 				dP(j, i) = 0;
@@ -900,7 +902,6 @@ void BlockLocalPositionEstimator::predict()
 	}
 
 	_P += dP;
-	// mavlink_and_console_log_info(&mavlink_log_pub, "[acc comp] P %4.3f, dP %4.3f", double(_P(X_z,X_z)),double(dP(X_z,X_z)));
 	_xLowPass.update(_x);
 	_aglLowPass.update(agl());
 }

@@ -161,7 +161,7 @@ void BlockLocalPositionEstimator::flowCorrect()
 		v = v_min;
 	}
 
-	// compute polynomial value
+	// compute polynomial value (noise model based on polynomial fit)
 	float flow_vxy_stddev = p[0] * h + p[1] * h * h + p[2] * v + p[3] * v * h + p[4] * v * h * h;
 
 	float rotrate_sq = _sub_att.get().rollspeed * _sub_att.get().rollspeed
