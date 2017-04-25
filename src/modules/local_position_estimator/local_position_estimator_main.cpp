@@ -44,13 +44,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <systemlib/systemlib.h>
 #include <systemlib/param/param.h>
 #include <systemlib/err.h>
 #include <drivers/drv_hrt.h>
 #include <math.h>
 #include <fcntl.h>
 #include <px4_posix.h>
-#include <px4_tasks.h>
 
 #include "BlockLocalPositionEstimator.hpp"
 
@@ -97,13 +97,12 @@ int local_position_estimator_main(int argc, char *argv[])
 
 	if (argc < 2) {
 		usage("missing command");
-		return 1;
 	}
 
 	if (!strcmp(argv[1], "start")) {
 
 		if (thread_running) {
-			PX4_INFO("already running");
+			warnx("already running");
 			/* this is not an error */
 			return 0;
 		}
@@ -113,19 +112,19 @@ int local_position_estimator_main(int argc, char *argv[])
 		deamon_task = px4_task_spawn_cmd("lp_estimator",
 						 SCHED_DEFAULT,
 						 SCHED_PRIORITY_MAX - 5,
-						 13500,
+						 12000,
 						 local_position_estimator_thread_main,
-						 (argv && argc > 2) ? (char *const *) &argv[2] : (char *const *) nullptr);
+						 (argv && argc > 2) ? (char *const *) &argv[2] : (char *const *) NULL);
 		return 0;
 	}
 
 	if (!strcmp(argv[1], "stop")) {
 		if (thread_running) {
-			PX4_DEBUG("stop");
+			warnx("stop");
 			thread_should_exit = true;
 
 		} else {
-			PX4_WARN("not started");
+			warnx("not started");
 		}
 
 		return 0;
@@ -133,10 +132,10 @@ int local_position_estimator_main(int argc, char *argv[])
 
 	if (!strcmp(argv[1], "status")) {
 		if (thread_running) {
-			PX4_INFO("is running");
+			warnx("is running");
 
 		} else {
-			PX4_INFO("not started");
+			warnx("not started");
 		}
 
 		return 0;
@@ -149,7 +148,7 @@ int local_position_estimator_main(int argc, char *argv[])
 int local_position_estimator_thread_main(int argc, char *argv[])
 {
 
-	PX4_DEBUG("starting");
+	warnx("starting");
 
 	using namespace control;
 
@@ -161,7 +160,7 @@ int local_position_estimator_thread_main(int argc, char *argv[])
 		est.update();
 	}
 
-	PX4_DEBUG("exiting.");
+	warnx("exiting.");
 
 	thread_running = false;
 

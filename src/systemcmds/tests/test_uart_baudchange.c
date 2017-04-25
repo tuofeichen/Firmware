@@ -1,6 +1,8 @@
 /****************************************************************************
+ * px4/sensors/test_gpio.c
  *
- *  Copyright (c) 2012, 2017 PX4 Development Team. All rights reserved.
+ *  Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *            Lorenz Meier <lm@inf.ethz.ch>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,7 +14,7 @@
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
- * 3. Neither the name PX4 nor the names of its contributors may be
+ * 3. Neither the name NuttX nor the names of its contributors may be
  *    used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +33,9 @@
  *
  ****************************************************************************/
 
-/**
- * @file test_uart_baudchange.c
- *
- * @author Lorenz Meier <lorenz@px4.io>
- */
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
 
 #include <px4_config.h>
 #include <px4_defines.h>
@@ -52,17 +52,51 @@
 
 #include <arch/board/board.h>
 
-#include "tests_main.h"
+#include "tests.h"
 
 #include <math.h>
 #include <float.h>
+
+
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Private Types
+ ****************************************************************************/
+
+/****************************************************************************
+ * Private Function Prototypes
+ ****************************************************************************/
+
+/****************************************************************************
+ * Private Data
+ ****************************************************************************/
+
+/****************************************************************************
+ * Public Data
+ ****************************************************************************/
+
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: test_led
+ ****************************************************************************/
 
 int test_uart_baudchange(int argc, char *argv[])
 {
 	int uart2_nwrite = 0;
 
 	/* assuming NuttShell is on UART1 (/dev/ttyS0) */
-	int uart2 = open("/dev/ttyS2", O_RDWR | O_NONBLOCK | O_NOCTTY); //
+	int uart2 = open("/dev/ttyS1", O_RDWR | O_NONBLOCK | O_NOCTTY); //
 
 	if (uart2 < 0) {
 		printf("ERROR opening UART2, aborting..\n");
@@ -77,17 +111,16 @@ int test_uart_baudchange(int argc, char *argv[])
 
 	int ret;
 
+#define UART_BAUDRATE_RUNTIME_CONF
+#ifdef UART_BAUDRATE_RUNTIME_CONF
+
 	if ((termios_state = tcgetattr(uart2, &uart2_config)) < 0) {
 		printf("ERROR getting termios config for UART2: %d\n", termios_state);
 		ret = termios_state;
 		goto cleanup;
 	}
 
-	if ((termios_state = tcgetattr(uart2, &uart2_config_original)) < 0) {
-		printf("ERROR getting termios config for UART2: %d\n", termios_state);
-		ret = termios_state;
-		goto cleanup;
-	}
+	memcpy(&uart2_config_original, &uart2_config, sizeof(struct termios));
 
 	/* Set baud rate */
 	if (cfsetispeed(&uart2_config, B9600) < 0 || cfsetospeed(&uart2_config, B9600) < 0) {
@@ -108,6 +141,8 @@ int test_uart_baudchange(int argc, char *argv[])
 		ret = termios_state;
 		goto cleanup;
 	}
+
+#endif
 
 	uint8_t sample_uart2[] = {'U', 'A', 'R', 'T', '2', ' ', '#', 0, '\n'};
 

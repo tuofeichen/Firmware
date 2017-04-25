@@ -35,12 +35,13 @@ px4_add_module(
 	MAIN gps
 	STACK_MAIN 1200
 	COMPILE_FLAGS
+		-Os
 	SRCS
 		gps.cpp
-		devices/src/gps_helper.cpp
-		devices/src/mtk.cpp
-		devices/src/ashtech.cpp
-		devices/src/ubx.cpp
+		gps_helper.cpp
+		mtk.cpp
+		ashtech.cpp
+		ubx.cpp
 	DEPENDS
 		platforms__common
 	)

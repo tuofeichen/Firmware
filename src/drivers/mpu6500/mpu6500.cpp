@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2015, 2016 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2015, 2016 Airmind Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -159,7 +159,7 @@
 #define BIT_INT_STATUS_DATA		0x01
 
 
-#define MPU6500_ACCEL_DEFAULT_RANGE_G			16
+#define MPU6500_ACCEL_DEFAULT_RANGE_G			8
 #define MPU6500_ACCEL_DEFAULT_RATE				1000
 #define MPU6500_ACCEL_MAX_OUTPUT_RATE			280
 #define MPU6500_ACCEL_DEFAULT_DRIVER_FILTER_FREQ	30
@@ -703,7 +703,7 @@ int MPU6500::reset()
 
 	while (--tries != 0) {
 		irqstate_t state;
-		state = px4_enter_critical_section();
+		state = irqsave();
 
 		write_reg(MPUREG_PWR_MGMT_1, BIT_H_RESET);
 		up_udelay(10000);
@@ -716,7 +716,7 @@ int MPU6500::reset()
 
 		// Disable I2C bus (recommended on datasheet)
 		write_checked_reg(MPUREG_USER_CTRL, BIT_I2C_IF_DIS);
-		px4_leave_critical_section(state);
+		irqrestore(state);
 
 		if (read_reg(MPUREG_PWR_MGMT_1) == MPU_CLK_SEL_PLLGYROZ) {
 			break;
@@ -753,7 +753,7 @@ int MPU6500::reset()
 	_gyro_range_scale = (0.0174532 / 16.4);//1.0f / (32768.0f * (2000.0f / 180.0f) * M_PI_F);
 	_gyro_range_rad_s = (2000.0f / 180.0f) * M_PI_F;
 
-	set_accel_range(MPU6500_ACCEL_DEFAULT_RANGE_G);
+	set_accel_range(8);
 
 	usleep(1000);
 
@@ -905,6 +905,31 @@ MPU6500::accel_self_test()
 		return 1;
 	}
 
+	/* inspect accel offsets */
+	if (fabsf(_accel_scale.x_offset) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.x_scale - 1.0f) > 0.4f || fabsf(_accel_scale.x_scale - 1.0f) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.y_offset) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.y_scale - 1.0f) > 0.4f || fabsf(_accel_scale.y_scale - 1.0f) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.z_offset) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.z_scale - 1.0f) > 0.4f || fabsf(_accel_scale.z_scale - 1.0f) < 0.000001f) {
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -951,6 +976,14 @@ MPU6500::gyro_self_test()
 	}
 
 	if (fabsf(_gyro_scale.z_scale - 1.0f) > max_scale) {
+		return 1;
+	}
+
+	/* check if all scales are zero */
+	if ((fabsf(_gyro_scale.x_offset) < 0.000001f) &&
+	    (fabsf(_gyro_scale.y_offset) < 0.000001f) &&
+	    (fabsf(_gyro_scale.z_offset) < 0.000001f)) {
+		/* if all are zero, this device is not calibrated */
 		return 1;
 	}
 
@@ -1259,14 +1292,14 @@ MPU6500::ioctl(struct file *filp, int cmd, unsigned long arg)
 				return -EINVAL;
 			}
 
-			irqstate_t flags = px4_enter_critical_section();
+			irqstate_t flags = irqsave();
 
 			if (!_accel_reports->resize(arg)) {
-				px4_leave_critical_section(flags);
+				irqrestore(flags);
 				return -ENOMEM;
 			}
 
-			px4_leave_critical_section(flags);
+			irqrestore(flags);
 
 			return OK;
 		}
@@ -1344,14 +1377,14 @@ MPU6500::gyro_ioctl(struct file *filp, int cmd, unsigned long arg)
 				return -EINVAL;
 			}
 
-			irqstate_t flags = px4_enter_critical_section();
+			irqstate_t flags = irqsave();
 
 			if (!_gyro_reports->resize(arg)) {
-				px4_leave_critical_section(flags);
+				irqrestore(flags);
 				return -ENOMEM;
 			}
 
-			px4_leave_critical_section(flags);
+			irqrestore(flags);
 
 			return OK;
 		}
@@ -1686,6 +1719,9 @@ MPU6500::measure()
 	report.gyro_z = int16_t_from_bytes(mpu_report.gyro_z);
 
 
+
+
+
 	if (report.accel_x == 0 &&
 	    report.accel_y == 0 &&
 	    report.accel_z == 0 &&
@@ -1713,6 +1749,29 @@ MPU6500::measure()
 		return;
 	}
 
+#if defined(CONFIG_ARCH_BOARD_MINDPX_V2)
+	/*
+	 * Swap axes and negate z
+	 */
+	int16_t accel_xt = report.accel_y;
+	int16_t accel_yt = report.accel_x;
+	int16_t accel_zt = ((report.accel_z == -32768) ? 32767 : -report.accel_z);
+
+	int16_t gyro_xt = report.gyro_y;
+	int16_t gyro_yt = report.gyro_x;
+	int16_t gyro_zt = ((report.gyro_z == -32768) ? 32767 : -report.gyro_z);
+
+	/*
+	 * Apply the swap
+	 */
+	report.accel_x = accel_xt;
+	report.accel_y = accel_yt;
+	report.accel_z = accel_zt;
+	report.gyro_x = gyro_xt;
+	report.gyro_y = gyro_yt;
+	report.gyro_z = gyro_zt;
+
+#else
 	/*
 	 * Swap axes and negate y
 	 */
@@ -1729,7 +1788,7 @@ MPU6500::measure()
 	report.accel_y = accel_yt;
 	report.gyro_x = gyro_xt;
 	report.gyro_y = gyro_yt;
-
+#endif
 	/*
 	 * Report buffers.
 	 */
@@ -1800,9 +1859,6 @@ MPU6500::measure()
 	arb.temperature_raw = report.temp;
 	arb.temperature = _last_temperature;
 
-	/* return device ID */
-	arb.device_id = _device_id.devid;
-
 	grb.x_raw = report.gyro_x;
 	grb.y_raw = report.gyro_y;
 	grb.z_raw = report.gyro_z;
@@ -1835,9 +1891,6 @@ MPU6500::measure()
 
 	grb.temperature_raw = report.temp;
 	grb.temperature = _last_temperature;
-
-	/* return device ID */
-	grb.device_id = _gyro->_device_id.devid;
 
 	_accel_reports->force(&arb);
 	_gyro_reports->force(&grb);
@@ -2057,7 +2110,7 @@ start(bool external_bus, enum Rotation rotation, int range)
 fail:
 
 	if (*g_dev_ptr != nullptr) {
-		delete *g_dev_ptr;
+		delete(*g_dev_ptr);
 		*g_dev_ptr = nullptr;
 	}
 

@@ -42,7 +42,6 @@
  */
 
 #include <px4_config.h>
-#include <px4_tasks.h>
 #include <drivers/device/i2c.h>
 #include <systemlib/param/param.h>
 
@@ -60,7 +59,7 @@
 #include <unistd.h>
 
 #include <nuttx/arch.h>
-#include <nuttx/i2c/i2c_master.h>
+#include <nuttx/i2c.h>
 
 #include <board_config.h>
 
@@ -76,6 +75,7 @@
 #include <systemlib/mixer/mixer.h>
 
 #include <uORB/topics/actuator_controls.h>
+#include <uORB/topics/actuator_controls_0.h>
 #include <uORB/topics/actuator_outputs.h>
 #include <uORB/topics/actuator_armed.h>
 #include <uORB/topics/esc_status.h>
@@ -505,7 +505,7 @@ MK::task_main()
 	/* loop until killed */
 	while (!_task_should_exit) {
 
-		param_get(_param_indicate_esc, &param_mkblctrl_test);
+		param_get(_param_indicate_esc , &param_mkblctrl_test);
 
 		if (param_mkblctrl_test > 0) {
 			_indicate_esc = true;
@@ -546,7 +546,7 @@ MK::task_main()
 					for (unsigned int i = 0; i < _num_outputs; i++) {
 						/* last resort: catch NaN, INF and out-of-band errors */
 						if (i < outputs.noutputs &&
-						    PX4_ISFINITE(outputs.output[i]) &&
+						    isfinite(outputs.output[i]) &&
 						    outputs.output[i] >= -1.0f &&
 						    outputs.output[i] <= 1.0f) {
 							/* scale for PWM output 900 - 2100us */

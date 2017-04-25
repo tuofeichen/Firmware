@@ -38,7 +38,6 @@
  */
 
 #include <px4_config.h>
-#include <px4_tasks.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -51,21 +50,31 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifndef CONFIG_ARCH_BOARD_SIM
+#include <stm32_pwr.h>
+#endif
 
-#include <px4_log.h>
 #include <systemlib/systemlib.h>
 
+// Didn't seem right to include up_internal.h, so direct extern instead.
+extern void up_systemreset(void) noreturn_function;
 
 void
 px4_systemreset(bool to_bootloader)
 {
-	board_set_bootload_mode(to_bootloader ? board_reset_enter_bootloader : board_reset_normal);
-	board_system_reset(to_bootloader ? 1 : 0);
-#if defined BOARD_HAS_NO_RESET
-	/* In case there is no HW support Just exit*/
-	PX4_WARN("System Reset Called");
-	exit(1);
+	if (to_bootloader) {
+#ifndef CONFIG_ARCH_BOARD_SIM
+		stm32_pwr_enablebkp();
 #endif
+
+		/* XXX wow, this is evil - write a magic number into backup register zero */
+		*(uint32_t *)0x40002850 = 0xb007b007;
+	}
+
+	up_systemreset();
+
+	/* lock up here */
+	while (true);
 }
 
 int px4_task_spawn_cmd(const char *name, int scheduler, int priority, int stack_size, main_t entry, char *const argv[])
@@ -73,13 +82,6 @@ int px4_task_spawn_cmd(const char *name, int scheduler, int priority, int stack_
 	int pid;
 
 	sched_lock();
-
-	/* None of the modules access the environment variables (via getenv() for instance), so delete them
-	 * all. They are only used within the startup script, and NuttX automatically exports them to the children
-	 * tasks.
-	 * This frees up a considerable amount of RAM.
-	 */
-	clearenv();
 
 	/* create the task */
 	pid = task_create(name, priority, stack_size, entry, argv);
@@ -104,15 +106,3 @@ int px4_task_delete(int pid)
 {
 	return task_delete(pid);
 }
-
-const char *px4_get_taskname(void)
-{
-#if CONFIG_TASK_NAME_SIZE > 0
-	FAR struct tcb_s	*thisproc = sched_self();
-
-	return thisproc->name;
-#else
-	return "app";
-#endif
-}
-

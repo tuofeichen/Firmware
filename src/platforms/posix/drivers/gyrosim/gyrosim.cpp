@@ -41,6 +41,7 @@
  * @author Mark Charlebois
  */
 
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 #include <px4_config.h>
@@ -387,7 +388,7 @@ GYROSIM::~GYROSIM()
 int
 GYROSIM::init()
 {
-	PX4_DEBUG("init");
+	PX4_INFO("GYROSIM::init");
 	int ret = 1;
 
 	struct accel_report arp = {};
@@ -534,7 +535,7 @@ GYROSIM::transfer(uint8_t *send, uint8_t *recv, unsigned len)
 void
 GYROSIM::_set_sample_rate(unsigned desired_sample_rate_hz)
 {
-	PX4_DEBUG("_set_sample_rate %u Hz", desired_sample_rate_hz);
+	PX4_INFO("GYROSIM::_set_sample_rate %u Hz", desired_sample_rate_hz);
 
 	if (desired_sample_rate_hz == 0 ||
 	    desired_sample_rate_hz == GYRO_SAMPLERATE_DEFAULT ||
@@ -553,7 +554,7 @@ GYROSIM::_set_sample_rate(unsigned desired_sample_rate_hz)
 	write_reg(MPUREG_SMPLRT_DIV, div - 1);
 
 	unsigned sample_rate = 1000 / div;
-	PX4_DEBUG("Changed sample rate to %uHz", sample_rate);
+	PX4_INFO("GYROSIM: Changed sample rate to %uHz", sample_rate);
 	setSampleInterval(1000000 / sample_rate);
 	_gyro->setSampleInterval(1000000 / sample_rate);
 }
@@ -618,6 +619,31 @@ GYROSIM::accel_self_test()
 		return 1;
 	}
 
+	/* inspect accel offsets */
+	if (fabsf(_accel_scale.x_offset) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.x_scale - 1.0f) > 0.4f || fabsf(_accel_scale.x_scale - 1.0f) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.y_offset) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.y_scale - 1.0f) > 0.4f || fabsf(_accel_scale.y_scale - 1.0f) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.z_offset) < 0.000001f) {
+		return 1;
+	}
+
+	if (fabsf(_accel_scale.z_scale - 1.0f) > 0.4f || fabsf(_accel_scale.z_scale - 1.0f) < 0.000001f) {
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -666,6 +692,14 @@ GYROSIM::gyro_self_test()
 	}
 
 	if (fabsf(_gyro_scale.z_scale - 1.0f) > max_scale) {
+		return 1;
+	}
+
+	/* check if all scales are zero */
+	if ((fabsf(_gyro_scale.x_offset) < 0.000001f) &&
+	    (fabsf(_gyro_scale.y_offset) < 0.000001f) &&
+	    (fabsf(_gyro_scale.z_offset) < 0.000001f)) {
+		/* if all are zero, this device is not calibrated */
 		return 1;
 	}
 
@@ -1074,9 +1108,6 @@ GYROSIM::_measure()
 	arb.y_integral = aval_integrated(1);
 	arb.z_integral = aval_integrated(2);
 
-	/* fake device ID */
-	arb.device_id = 6789478;
-
 	grb.x_raw = (int16_t)(mpu_report.gyro_x / _gyro_range_scale);
 	grb.y_raw = (int16_t)(mpu_report.gyro_y / _gyro_range_scale);
 	grb.z_raw = (int16_t)(mpu_report.gyro_z / _gyro_range_scale);
@@ -1098,9 +1129,6 @@ GYROSIM::_measure()
 	grb.x_integral = gval_integrated(0);
 	grb.y_integral = gval_integrated(1);
 	grb.z_integral = gval_integrated(2);
-
-	/* fake device ID */
-	grb.device_id = 3467548;
 
 	_accel_reports->force(&arb);
 	_gyro_reports->force(&grb);
@@ -1185,7 +1213,7 @@ int
 GYROSIM_gyro::init()
 {
 	int ret = VirtDevObj::init();
-	PX4_DEBUG("GYROSIM_gyro::init base class ret: %d", ret);
+	PX4_INFO("GYROSIM_gyro::init base class ret: %d", ret);
 	return ret;
 }
 
@@ -1279,7 +1307,7 @@ start(enum Rotation rotation)
 fail:
 
 	if (*g_dev_ptr != nullptr) {
-		delete *g_dev_ptr;
+		delete(*g_dev_ptr);
 		*g_dev_ptr = nullptr;
 	}
 

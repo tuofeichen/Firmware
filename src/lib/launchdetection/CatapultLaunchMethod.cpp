@@ -49,7 +49,6 @@ CatapultLaunchMethod::CatapultLaunchMethod(SuperBlock *parent) :
 	SuperBlock(parent, "CAT"),
 	last_timestamp(hrt_absolute_time()),
 	integrator(0.0f),
-	motorDelayCounter(0.0f),
 	state(LAUNCHDETECTION_RES_NONE),
 	thresholdAccel(this, "A"),
 	thresholdTime(this, "T"),

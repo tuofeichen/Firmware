@@ -59,20 +59,13 @@ struct Params {
 	float arsp_lp_gain;			// total airspeed estimate low pass gain
 	int vtol_type;
 	int elevons_mc_lock;		// lock elevons in multicopter mode
-	float fw_min_alt;			// minimum relative altitude for FW mode (QuadChute)
-	float fw_qc_max_pitch;		// maximum pitch angle FW mode (QuadChute)
-	float fw_qc_max_roll;		// maximum roll angle FW mode (QuadChute)
-	float front_trans_time_openloop;
-	float front_trans_time_min;
 };
 
-// Has to match 1:1 msg/vtol_vehicle_status.msg
 enum mode {
-	TRANSITION_TO_FW = 1,
-	TRANSITION_TO_MC = 2,
-	ROTARY_WING = 3,
-	FIXED_WING = 4,
-	EXTERNAL = 5
+	ROTARY_WING = 0,
+	FIXED_WING,
+	TRANSITION,
+	EXTERNAL
 };
 
 enum vtol_type {
@@ -88,8 +81,6 @@ class VtolType
 public:
 
 	VtolType(VtolAttitudeControl *att_controller);
-	VtolType(const VtolType &) = delete;
-	VtolType &operator=(const VtolType &) = delete;
 
 	virtual ~VtolType();
 
@@ -129,22 +120,10 @@ public:
 	 */
 	virtual void waiting_on_tecs() {};
 
-	/**
-	 * Checks for fixed-wing failsafe condition and issues abort request if needed.
-	 */
-	void check_quadchute_condition();
-
-	/**
-	 * Returns true if we're allowed to do a mode transition on the ground.
-	 */
-	bool can_transition_on_ground();
-
 	void set_idle_mc();
 	void set_idle_fw();
 
 	mode get_mode() {return _vtol_mode;};
-
-	virtual void parameters_update() = 0;
 
 protected:
 	VtolAttitudeControl *_attc;
@@ -168,8 +147,8 @@ protected:
 	struct vehicle_local_position_s			*_local_pos;
 	struct airspeed_s 				*_airspeed;					// airspeed
 	struct battery_status_s 			*_batt_status; 				// battery status
+	struct vehicle_status_s 			*_vehicle_status;			// vehicle status from commander app
 	struct tecs_status_s				*_tecs_status;
-	struct vehicle_land_detected_s			*_land_detected;
 
 	struct Params 					*_params;
 

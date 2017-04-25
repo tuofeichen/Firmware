@@ -116,5 +116,6 @@ private:
 
 	perf_counter_t	        _sample_perf;
 	perf_counter_t	        _read_errors;
+	perf_counter_t	        _buffer_overflows;
 	perf_counter_t	        _sensor_zero_resets;
 };

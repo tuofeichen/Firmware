@@ -86,7 +86,7 @@ void
 RingBuffer::flush()
 {
 	while (!empty()) {
-		get(nullptr);
+		get(NULL);
 	}
 }
 
@@ -179,7 +179,7 @@ RingBuffer::force(const void *val, size_t val_size)
 			break;
 		}
 
-		get(nullptr);
+		get(NULL);
 		overwrote = true;
 	}
 
@@ -281,7 +281,7 @@ RingBuffer::get(void *val, size_t val_size)
 			next = _next(candidate);
 
 			/* go ahead and read from this index */
-			if (val != nullptr) {
+			if (val != NULL) {
 				memcpy(val, &_buf[candidate * _item_size], val_size);
 			}
 
@@ -356,7 +356,7 @@ RingBuffer::get(double &val)
 }
 
 unsigned
-RingBuffer::space()
+RingBuffer::space(void)
 {
 	unsigned tail, head;
 
@@ -377,7 +377,7 @@ RingBuffer::space()
 }
 
 unsigned
-RingBuffer::count()
+RingBuffer::count(void)
 {
 	/*
 	 * Note that due to the conservative nature of space(), this may

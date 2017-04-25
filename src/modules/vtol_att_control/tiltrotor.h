@@ -72,9 +72,6 @@ private:
 		int elevons_mc_lock;			/**< lock elevons in multicopter mode */
 		float front_trans_dur_p2;
 		int fw_motors_off;			/**< bitmask of all motors that should be off in fixed wing mode */
-		int airspeed_mode;
-		int diff_thrust;
-		float diff_thrust_scale;
 	} _params_tiltrotor;
 
 	struct {
@@ -88,9 +85,6 @@ private:
 		param_t elevons_mc_lock;
 		param_t front_trans_dur_p2;
 		param_t fw_motors_off;
-		param_t airspeed_mode;
-		param_t diff_thrust;
-		param_t diff_thrust_scale;
 	} _params_handles_tiltrotor;
 
 	enum vtol_mode {
@@ -109,8 +103,7 @@ private:
 	enum rear_motor_state {
 		ENABLED = 0,
 		DISABLED,
-		IDLE,
-		VALUE
+		IDLE
 	} _rear_motors;
 
 	struct {
@@ -135,12 +128,12 @@ private:
 	/**
 	 * Adjust the state of the rear motors. In fw mode they shouldn't spin.
 	 */
-	void set_rear_motor_state(rear_motor_state state, int value = 0);
+	void set_rear_motor_state(rear_motor_state state);
 
 	/**
 	 * Update parameters.
 	 */
-	virtual void parameters_update();
+	int parameters_update();
 
 };
 #endif

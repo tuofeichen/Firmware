@@ -39,8 +39,7 @@
 #include <math.h>
 
 TailsitterRecovery::TailsitterRecovery():
-	_in_recovery_mode(false),
-	_yaw_ff(0.0f)
+	_in_recovery_mode(false)
 {
 	_att_p(0) = _att_p(1) = _att_p(2) = 4.0f;
 }

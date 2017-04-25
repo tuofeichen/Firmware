@@ -39,6 +39,7 @@
 
 #pragma once
 
+#define __STDC_FORMAT_MACROS
 #include <stdint.h>
 #include <inttypes.h>
 
@@ -54,7 +55,7 @@ static const uint16_t maxChildrenPerBlock = 100;
 static const uint16_t maxParamsPerBlock = 100;
 static const uint16_t maxSubscriptionsPerBlock = 100;
 static const uint16_t maxPublicationsPerBlock = 100;
-static const uint8_t blockNameLengthMax = 40;
+static const uint8_t blockNameLengthMax = 80;
 
 // forward declaration
 class BlockParamBase;

@@ -37,15 +37,13 @@
  * Common header for mathlib exports.
  */
 
-#pragma once
-
 #ifdef __cplusplus
+
+#pragma once
 
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
 #include "math/Quaternion.hpp"
 #include "math/Limits.hpp"
-#include "math/Expo.hpp"
-#include "math/matrix_alg.h"
 
 #endif

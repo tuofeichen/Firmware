@@ -23,7 +23,3 @@ do
 	adb push $arg $last
 	((i+=1))
 done
-
-# Make sure they are synced to the file system
-echo "Syncing FS..."
-adb shell sync

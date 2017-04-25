@@ -52,7 +52,6 @@
 #include <uORB/topics/vehicle_control_mode.h>
 #include <uORB/topics/position_setpoint_triplet.h>
 #include <uORB/topics/vehicle_global_position.h>
-#include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/vehicle_gps_position.h>
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/mission_result.h>
@@ -96,7 +95,7 @@ public:
 	 *
 	 * @return		OK on success.
 	 */
-	int			start();
+	int		start();
 
 	/**
 	 * Display the navigator status.
@@ -116,13 +115,13 @@ public:
 	/**
 	 * Publish the geofence result
 	 */
-	void		publish_geofence_result();
+	void publish_geofence_result();
 
 	/**
 	 * Publish the attitude sp, only to be used in very special modes when position control is deactivated
 	 * Example: mode that is triggered on gps failure
 	 */
-	void		publish_att_sp();
+	void publish_att_sp();
 
 	/**
 	 * Setters
@@ -134,32 +133,29 @@ public:
 	/**
 	 * Getters
 	 */
-	struct vehicle_status_s *get_vstatus() { return &_vstatus; }
-	struct vehicle_land_detected_s *get_land_detected() { return &_land_detected; }
-	struct vehicle_control_mode_s *get_control_mode() { return &_control_mode; }
-	struct vehicle_global_position_s *get_global_position() { return &_global_pos; }
-	struct vehicle_local_position_s *get_local_position() { return &_local_pos; }
-	struct vehicle_gps_position_s *get_gps_position() { return &_gps_pos; }
-	struct sensor_combined_s *get_sensor_combined() { return &_sensor_combined; }
-	struct home_position_s *get_home_position() { return &_home_pos; }
-	bool home_position_valid() { return (_home_pos.timestamp > 0); }
-	struct position_setpoint_triplet_s *get_position_setpoint_triplet() { return &_pos_sp_triplet; }
-	struct position_setpoint_triplet_s *get_reposition_triplet() { return &_reposition_triplet; }
-	struct position_setpoint_triplet_s *get_takeoff_triplet() { return &_takeoff_triplet; }
-	struct mission_result_s *get_mission_result() { return &_mission_result; }
-	struct geofence_result_s *get_geofence_result() { return &_geofence_result; }
-	struct vehicle_attitude_setpoint_s *get_att_sp() { return &_att_sp; }
+	struct vehicle_status_s*	    get_vstatus() { return &_vstatus; }
+	struct vehicle_land_detected_s*	    get_land_detected() { return &_land_detected; }
+	struct vehicle_control_mode_s*	    get_control_mode() { return &_control_mode; }
+	struct vehicle_global_position_s*   get_global_position() { return &_global_pos; }
+	struct vehicle_gps_position_s*	    get_gps_position() { return &_gps_pos; }
+	struct sensor_combined_s*	    get_sensor_combined() { return &_sensor_combined; }
+	struct home_position_s*		    get_home_position() { return &_home_pos; }
+	bool				    home_position_valid() { return (_home_pos.timestamp > 0); }
+	struct position_setpoint_triplet_s* get_position_setpoint_triplet() { return &_pos_sp_triplet; }
+	struct mission_result_s*	    get_mission_result() { return &_mission_result; }
+	struct geofence_result_s*		    get_geofence_result() { return &_geofence_result; }
+	struct vehicle_attitude_setpoint_s* get_att_sp() { return &_att_sp; }
 
 	int		get_onboard_mission_sub() { return _onboard_mission_sub; }
 	int		get_offboard_mission_sub() { return _offboard_mission_sub; }
-	Geofence	&get_geofence() { return _geofence; }
+	Geofence&	get_geofence() { return _geofence; }
 	bool		get_can_loiter_at_sp() { return _can_loiter_at_sp; }
 	float		get_loiter_radius() { return _param_loiter_radius.get(); }
 
 	/**
 	 * Returns the default acceptance radius defined by the parameter
 	 */
-	float		get_default_acceptance_radius();
+	float get_default_acceptance_radius();
 
 	/**
 	 * Get the acceptance radius
@@ -167,13 +163,6 @@ public:
 	 * @return the distance at which the next waypoint should be used
 	 */
 	float		get_acceptance_radius();
-
-	/**
-	 * Get the altitude acceptance radius
-	 *
-	 * @return the distance from the target altitude before considering the waypoint reached
-	 */
-	float		get_altitude_acceptance_radius();
 
 	/**
 	 * Get the cruising speed
@@ -184,33 +173,8 @@ public:
 
 	/**
 	 * Set the cruising speed
-	 *
-	 * Passing a negative value or leaving the parameter away will reset the cruising speed
-	 * to its default value.
-	 *
-	 * For VTOL: sets cuising speed for current mode only (multirotor or fixed-wing).
-	 *
 	 */
-	void		set_cruising_speed(float speed = -1.0f);
-
-	/**
-	 * Reset cruising speed to default values
-	 *
-	 * For VTOL: resets both cruising speeds.
-	 */
-	void		reset_cruising_speed();
-
-	/**
-	 * Get the target throttle
-	 *
-	 * @return the desired throttle for this mission
-	 */
-	float		get_cruising_throttle();
-
-	/**
-	 * Set the target throttle
-	 */
-	void		set_cruising_throttle(float throttle = -1.0f) { _mission_throttle = throttle; }
+	void		set_cruising_speed(float speed=-1.0f) { _mission_cruising_speed = speed; }
 
 	/**
 	 * Get the acceptance radius given the mission item preset radius
@@ -226,12 +190,6 @@ public:
 
 	void 		set_mission_failure(const char *reason);
 
-	bool		is_planned_mission() { return _navigation_mode == &_mission; }
-
-	bool		abort_landing();
-
-	static float		get_time_inside(struct mission_item_s &item) { return (item.nav_cmd == NAV_CMD_TAKEOFF) ? 0.0f : item.time_inside; }
-
 private:
 
 	bool		_task_should_exit;		/**< if true, sensor task should exit */
@@ -240,13 +198,12 @@ private:
 	orb_advert_t	_mavlink_log_pub;		/**< the uORB advert to send messages over mavlink */
 
 	int		_global_pos_sub;		/**< global position subscription */
-	int		_local_pos_sub;		/**< local position subscription */
 	int		_gps_pos_sub;		/**< gps position subscription */
 	int		_sensor_combined_sub;		/**< sensor combined subscription */
 	int		_home_pos_sub;			/**< home position subscription */
 	int		_vstatus_sub;			/**< vehicle status subscription */
 	int		_land_detected_sub;		/**< vehicle land detected subscription */
-	int		_fw_pos_ctrl_status_sub;		/**< notification of vehicle capabilities updates */
+	int		_capabilities_sub;		/**< notification of vehicle capabilities updates */
 	int		_control_mode_sub;		/**< vehicle control mode subscription */
 	int		_onboard_mission_sub;		/**< onboard mission subscription */
 	int		_offboard_mission_sub;		/**< offboard mission subscription */
@@ -264,15 +221,12 @@ private:
 	vehicle_land_detected_s				_land_detected;		/**< vehicle land_detected */
 	vehicle_control_mode_s				_control_mode;		/**< vehicle control mode */
 	vehicle_global_position_s			_global_pos;		/**< global vehicle position */
-	vehicle_local_position_s			_local_pos;		/**< local vehicle position */
 	vehicle_gps_position_s				_gps_pos;		/**< gps position */
 	sensor_combined_s				_sensor_combined;	/**< sensor values */
 	home_position_s					_home_pos;		/**< home position for RTL */
 	mission_item_s 					_mission_item;		/**< current mission item */
-	fw_pos_ctrl_status_s			_fw_pos_ctrl_status;		/**< fixed wing navigation capabilities */
+	navigation_capabilities_s			_nav_caps;		/**< navigation capabilities */
 	position_setpoint_triplet_s			_pos_sp_triplet;	/**< triplet of position setpoints */
-	position_setpoint_triplet_s			_reposition_triplet;	/**< triplet for non-mission direct position command */
-	position_setpoint_triplet_s			_takeoff_triplet;	/**< triplet for non-mission direct takeoff command */
 
 	mission_result_s				_mission_result;
 	geofence_result_s				_geofence_result;
@@ -312,26 +266,18 @@ private:
 
 	control::BlockParamFloat _param_loiter_radius;	/**< loiter radius for fixedwing */
 	control::BlockParamFloat _param_acceptance_radius;	/**< acceptance for takeoff */
-	control::BlockParamFloat _param_fw_alt_acceptance_radius;	/**< acceptance radius for fixedwing altitude */
-	control::BlockParamFloat _param_mc_alt_acceptance_radius;	/**< acceptance radius for multicopter altitude */
-
+	control::BlockParamInt _param_datalinkloss_obc;	/**< if true: obc mode on data link loss enabled */
+	control::BlockParamInt _param_rcloss_obc;	/**< if true: obc mode on rc loss enabled */
+	
 	control::BlockParamFloat _param_cruising_speed_hover;
 	control::BlockParamFloat _param_cruising_speed_plane;
-	control::BlockParamFloat _param_cruising_throttle_plane;
 
-	float _mission_cruising_speed_mc;
-	float _mission_cruising_speed_fw;
-	float _mission_throttle;
+	float _mission_cruising_speed;
 
 	/**
 	 * Retrieve global position
 	 */
 	void		global_position_update();
-
-	/**
-	 * Retrieve local position
-	 */
-	void		local_position_update();
 
 	/**
 	 * Retrieve gps position
@@ -346,12 +292,12 @@ private:
 	/**
 	 * Retrieve home position
 	 */
-	void		home_position_update(bool force = false);
+	void		home_position_update(bool force=false);
 
 	/**
-	 * Retrieve fixed wing navigation capabilities
+	 * Retreive navigation capabilities
 	 */
-	void		fw_pos_ctrl_status_update();
+	void		navigation_capabilities_update();
 
 	/**
 	 * Retrieve vehicle status
@@ -402,7 +348,7 @@ private:
 	/* this class has ptr data members, so it should not be copied,
 	 * consequently the copy constructors are private.
 	 */
-	Navigator(const Navigator &);
-	Navigator operator=(const Navigator &);
+	Navigator(const Navigator&);
+	Navigator operator=(const Navigator&);
 };
 #endif

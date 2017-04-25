@@ -73,6 +73,10 @@ private:
 static px4_dev_t *devmap[PX4_MAX_DEV];
 pthread_mutex_t devmutex = PTHREAD_MUTEX_INITIALIZER;
 
+/*
+ * The standard NuttX operation dispatch table can't call C++ member functions
+ * directly, so we have to bounce them through this dispatch table.
+ */
 
 VDev::VDev(const char *name,
 	   const char *devname) :
@@ -84,11 +88,13 @@ VDev::VDev(const char *name,
 	// private
 	_devname(devname),
 	_registered(false),
-	_max_pollwaiters(0),
-	_open_count(0),
-	_pollset(nullptr)
+	_open_count(0)
 {
 	PX4_DEBUG("VDev::VDev");
+
+	for (unsigned i = 0; i < _max_pollwaiters; i++) {
+		_pollset[i] = nullptr;
+	}
 }
 
 VDev::~VDev()
@@ -97,10 +103,6 @@ VDev::~VDev()
 
 	if (_registered) {
 		unregister_driver(_devname);
-	}
-
-	if (_pollset) {
-		delete[](_pollset);
 	}
 }
 
@@ -139,7 +141,7 @@ VDev::register_driver(const char *name, void *data)
 	PX4_DEBUG("VDev::register_driver %s", name);
 	int ret = -ENOSPC;
 
-	if (name == nullptr || data == nullptr) {
+	if (name == NULL || data == NULL) {
 		return -EINVAL;
 	}
 
@@ -156,7 +158,7 @@ VDev::register_driver(const char *name, void *data)
 	}
 
 	for (int i = 0; i < PX4_MAX_DEV; ++i) {
-		if (devmap[i] == nullptr) {
+		if (devmap[i] == NULL) {
 			devmap[i] = new px4_dev_t(name, (void *)data);
 			PX4_DEBUG("Registered DEV %s", name);
 			ret = PX4_OK;
@@ -179,7 +181,7 @@ VDev::unregister_driver(const char *name)
 	PX4_DEBUG("VDev::unregister_driver %s", name);
 	int ret = -EINVAL;
 
-	if (name == nullptr) {
+	if (name == NULL) {
 		return -EINVAL;
 	}
 
@@ -188,7 +190,7 @@ VDev::unregister_driver(const char *name)
 	for (int i = 0; i < PX4_MAX_DEV; ++i) {
 		if (devmap[i] && (strcmp(name, devmap[i]->name) == 0)) {
 			delete devmap[i];
-			devmap[i] = nullptr;
+			devmap[i] = NULL;
 			PX4_DEBUG("Unregistered DEV %s", name);
 			ret = PX4_OK;
 			break;
@@ -213,7 +215,7 @@ VDev::unregister_class_devname(const char *class_devname, unsigned class_instanc
 		if (devmap[i] && strcmp(devmap[i]->name, name) == 0) {
 			delete devmap[i];
 			PX4_DEBUG("Unregistered class DEV %s", name);
-			devmap[i] = nullptr;
+			devmap[i] = NULL;
 			pthread_mutex_unlock(&devmutex);
 			return PX4_OK;
 		}
@@ -435,11 +437,10 @@ VDev::poll_notify(pollevent_t events)
 	/* lock against poll() as well as other wakeups */
 	lock();
 
-	for (unsigned i = 0; i < _max_pollwaiters; i++) {
+	for (unsigned i = 0; i < _max_pollwaiters; i++)
 		if (nullptr != _pollset[i]) {
 			poll_notify_one(_pollset[i], events);
 		}
-	}
 
 	unlock();
 }
@@ -489,29 +490,7 @@ VDev::store_poll_waiter(px4_pollfd_struct_t *fds)
 		}
 	}
 
-	/* No free slot found. Resize the pollset */
-
-	if (_max_pollwaiters >= 256 / 2) { //_max_pollwaiters is uint8_t
-		return -ENOMEM;
-	}
-
-	const uint8_t new_count = _max_pollwaiters > 0 ? _max_pollwaiters * 2 : 1;
-	px4_pollfd_struct_t **new_pollset = new px4_pollfd_struct_t *[new_count];
-
-	if (!new_pollset) {
-		return -ENOMEM;
-	}
-
-	if (_max_pollwaiters > 0) {
-		memset(new_pollset + _max_pollwaiters, 0, sizeof(px4_pollfd_struct_t *) * (new_count - _max_pollwaiters));
-		memcpy(new_pollset, _pollset, sizeof(px4_pollfd_struct_t *) * _max_pollwaiters);
-		delete[](_pollset);
-	}
-
-	_pollset = new_pollset;
-	_pollset[_max_pollwaiters] = fds;
-	_max_pollwaiters = new_count;
-	return PX4_OK;
+	return -ENOMEM;
 }
 
 int
@@ -551,7 +530,7 @@ VDev *VDev::getDev(const char *path)
 
 	pthread_mutex_unlock(&devmutex);
 
-	return nullptr;
+	return NULL;
 }
 
 void VDev::showDevices()
@@ -622,24 +601,22 @@ void VDev::showFiles()
 
 const char *VDev::topicList(unsigned int *next)
 {
-	for (; *next < PX4_MAX_DEV; (*next)++) {
+	for (; *next < PX4_MAX_DEV; (*next)++)
 		if (devmap[*next] && strncmp(devmap[(*next)]->name, "/obj/", 5) == 0) {
 			return devmap[(*next)++]->name;
 		}
-	}
 
-	return nullptr;
+	return NULL;
 }
 
 const char *VDev::devList(unsigned int *next)
 {
-	for (; *next < PX4_MAX_DEV; (*next)++) {
+	for (; *next < PX4_MAX_DEV; (*next)++)
 		if (devmap[*next] && strncmp(devmap[(*next)]->name, "/dev/", 5) == 0) {
 			return devmap[(*next)++]->name;
 		}
-	}
 
-	return nullptr;
+	return NULL;
 }
 
 } // namespace device

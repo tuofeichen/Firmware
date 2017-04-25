@@ -41,6 +41,7 @@ uint8 RC_IN_MODE_GENERATED = 2
 
 # state machine / state of vehicle.
 # Encodes the complete system state and is set by the commander app.
+uint64 timestamp # in microseconds since system start, is set whenever the writing thread stores new data
 
 uint8 nav_state				# set navigation state machine to specified value
 uint8 arming_state			# current arming state
@@ -53,9 +54,8 @@ uint32 component_id			# subsystem / component id, contains MAVLink's component I
 
 bool is_rotary_wing			# True if system is in rotary wing configuration, so for a VTOL this is only true while flying as a multicopter
 bool is_vtol				# True if the system is VTOL capable
-bool vtol_fw_permanent_stab		# True if VTOL should stabilize attitude for fw in manual mode
+bool vtol_fw_permanent_stab		# True if vtol should stabilize attitude for fw in manual mode
 bool in_transition_mode			# True if VTOL is doing a transition
-bool in_transition_to_fw		# True if VTOL is doing a transition from MC to FW
 
 bool rc_signal_lost				# true if RC reception lost
 uint8 rc_input_mode				# set to 1 to disable the RC input, 2 to enable manual control to RC in mapping.
@@ -70,3 +70,6 @@ bool mission_failure				# Set to true if mission could not continue/finish
 uint32 onboard_control_sensors_present
 uint32 onboard_control_sensors_enabled
 uint32 onboard_control_sensors_health
+
+float32 load					# processor load from 0 to 1
+

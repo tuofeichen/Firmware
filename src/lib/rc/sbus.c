@@ -51,24 +51,13 @@
 #include "sbus.h"
 #include <drivers/drv_hrt.h>
 
-#define SBUS_DEBUG_LEVEL 	0 /* Set debug output level */
-
 #define SBUS_START_SYMBOL	0x0f
 
 #define SBUS_INPUT_CHANNELS	16
 #define SBUS_FLAGS_BYTE		23
 #define SBUS_FAILSAFE_BIT	3
 #define SBUS_FRAMELOST_BIT	2
-
-// testing with a SBUS->PWM adapter shows that
-// above 300Hz SBUS becomes unreliable. 333 would
-// be the theoretical achievable, but at 333Hz some
-// frames are lost
-#define SBUS1_MAX_RATE_HZ	300
-#define SBUS1_MIN_RATE_HZ	50
-
-// this is the rate of the old code
-#define SBUS1_DEFAULT_RATE_HZ	72
+#define SBUS1_FRAME_DELAY	14000
 
 #define SBUS_SINGLE_CHAR_LEN_US		(1/((100000/10)) * 1000 * 1000)
 
@@ -90,8 +79,8 @@
 #define SBUS_TARGET_MIN 1000.0f
 #define SBUS_TARGET_MAX 2000.0f
 
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 0
-#  include <stdio.h>
+#ifdef SBUS_DEBUG
+#include <stdio.h>
 #endif
 
 /* pre-calculate the floating point stuff as far as possible at compile time */
@@ -119,7 +108,6 @@ static enum SBUS2_DECODE_STATE {
 static uint8_t	sbus_frame[SBUS_FRAME_SIZE + (SBUS_FRAME_SIZE / 2)];
 
 static unsigned partial_frame_count;
-static unsigned sbus1_frame_delay = (1000U * 1000U) / SBUS1_DEFAULT_RATE_HZ;
 
 static unsigned sbus_frame_drops;
 
@@ -191,7 +179,7 @@ sbus1_output(int sbus_fd, uint16_t *values, uint16_t num_values)
 
 	now = hrt_absolute_time();
 
-	if ((now - last_txframe_time) > sbus1_frame_delay) {
+	if ((now - last_txframe_time) > SBUS1_FRAME_DELAY) {
 		last_txframe_time = now;
 		uint8_t	oframe[SBUS_FRAME_SIZE] = { 0x0f };
 
@@ -295,7 +283,7 @@ sbus_parse(uint64_t now, uint8_t *frame, unsigned len, uint16_t *values,
 		if (partial_frame_count == sizeof(sbus_frame) / sizeof(sbus_frame[0])) {
 			partial_frame_count = 0;
 			sbus_decode_state = SBUS2_DECODE_STATE_DESYNC;
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 0
+#ifdef SBUS_DEBUG
 			printf("SBUS2: RESET (BUF LIM)\n");
 #endif
 		}
@@ -303,12 +291,13 @@ sbus_parse(uint64_t now, uint8_t *frame, unsigned len, uint16_t *values,
 		if (partial_frame_count == SBUS_FRAME_SIZE) {
 			partial_frame_count = 0;
 			sbus_decode_state = SBUS2_DECODE_STATE_DESYNC;
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 0
+#ifdef SBUS_DEBUG
 			printf("SBUS2: RESET (PACKET LIM)\n");
 #endif
 		}
 
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 1
+#ifdef SBUS_DEBUG
+#if 0
 		printf("sbus state: %s%s%s%s%s%s, count: %d, val: %02x\n",
 		       (sbus_decode_state == SBUS2_DECODE_STATE_DESYNC) ? "SBUS2_DECODE_STATE_DESYNC" : "",
 		       (sbus_decode_state == SBUS2_DECODE_STATE_SBUS_START) ? "SBUS2_DECODE_STATE_SBUS_START" : "",
@@ -318,6 +307,7 @@ sbus_parse(uint64_t now, uint8_t *frame, unsigned len, uint16_t *values,
 		       (sbus_decode_state == SBUS2_DECODE_STATE_SBUS2_GPS) ? "SBUS2_DECODE_STATE_SBUS2_GPS" : "",
 		       partial_frame_count,
 		       (unsigned)frame[d]);
+#endif
 #endif
 
 		switch (sbus_decode_state) {
@@ -376,7 +366,7 @@ sbus_parse(uint64_t now, uint8_t *frame, unsigned len, uint16_t *values,
 						partial_frame_count -= start_index;
 						sbus_decode_state = SBUS2_DECODE_STATE_SBUS_START;
 
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 0
+#ifdef SBUS_DEBUG
 						printf("DECODE RECOVERY: %d\n", start_index);
 #endif
 					}
@@ -413,9 +403,9 @@ sbus_parse(uint64_t now, uint8_t *frame, unsigned len, uint16_t *values,
 						// (frame[0] == 0x3 && frame[1] == 0xc4 && frame[2] == 0x0)
 						// (frame[0] == 0x3 && frame[1] == 0x80 && frame[2] == 0x2f)
 						// (frame[0] == 0x3 && frame[1] == 0xc0 && frame[2] == 0x2f)
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 2
-						uint16_t rx_voltage = (sbus_frame[1] << 8) | sbus_frame[2];
-						printf("rx_voltage %d\n", (int)rx_voltage);
+#ifdef SBUS_DEBUG
+						//uint16_t rx_voltage = (sbus_frame[1] << 8) | sbus_frame[2];
+						//printf("rx_voltage %d\n", (int)rx_voltage);
 #endif
 					}
 
@@ -446,7 +436,7 @@ sbus_parse(uint64_t now, uint8_t *frame, unsigned len, uint16_t *values,
 				/* find out which payload we're dealing with in this slot */
 				switch (sbus_frame[0]) {
 				case 0x13: {
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 0
+#ifdef SBUS_DEBUG
 						uint16_t gps_something = (frame[1] << 8) | frame[2];
 						printf("gps_something %d\n", (int)gps_something);
 #endif
@@ -465,7 +455,7 @@ sbus_parse(uint64_t now, uint8_t *frame, unsigned len, uint16_t *values,
 			break;
 
 		default:
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 0
+#ifdef SBUS_DEBUG
 			printf("UNKNOWN PROTO STATE");
 #endif
 			decode_ret = false;
@@ -526,7 +516,7 @@ sbus_decode(uint64_t frame_time, uint8_t *frame, uint16_t *values, uint16_t *num
 	/* check frame boundary markers to avoid out-of-sync cases */
 	if ((frame[0] != SBUS_START_SYMBOL)) {
 		sbus_frame_drops++;
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 0
+#ifdef SBUS_DEBUG
 		printf("DECODE FAIL: ");
 
 		for (unsigned i = 0; i < SBUS_FRAME_SIZE; i++) {
@@ -566,7 +556,7 @@ sbus_decode(uint64_t frame_time, uint8_t *frame, uint16_t *values, uint16_t *num
 		break;
 
 	default:
-#if defined(SBUS_DEBUG_LEVEL) && SBUS_DEBUG_LEVEL > 0
+#ifdef SBUS_DEBUG
 		printf("DECODE FAIL: END MARKER\n");
 #endif
 		sbus_decode_state = SBUS2_DECODE_STATE_DESYNC;
@@ -606,9 +596,9 @@ sbus_decode(uint64_t frame_time, uint8_t *frame, uint16_t *values, uint16_t *num
 		chancount = 18;
 
 		/* channel 17 (index 16) */
-		values[16] = (((frame[SBUS_FLAGS_BYTE] & (1 << 0)) > 0) ? 1 : 0) * 1000 + 998;
+		values[16] = (frame[SBUS_FLAGS_BYTE] & (1 << 0)) * 1000 + 998;
 		/* channel 18 (index 17) */
-		values[17] = (((frame[SBUS_FLAGS_BYTE] & (1 << 1)) > 0) ? 1 : 0) * 1000 + 998;
+		values[17] = (frame[SBUS_FLAGS_BYTE] & (1 << 1)) * 1000 + 998;
 	}
 
 	/* note the number of channels decoded */
@@ -636,20 +626,4 @@ sbus_decode(uint64_t frame_time, uint8_t *frame, uint16_t *values, uint16_t *num
 	}
 
 	return true;
-}
-
-/*
-  set output rate of SBUS in Hz
- */
-void sbus1_set_output_rate_hz(uint16_t rate_hz)
-{
-	if (rate_hz > SBUS1_MAX_RATE_HZ) {
-		rate_hz = SBUS1_MAX_RATE_HZ;
-	}
-
-	if (rate_hz < SBUS1_MIN_RATE_HZ) {
-		rate_hz = SBUS1_MIN_RATE_HZ;
-	}
-
-	sbus1_frame_delay = (1000U * 1000U) / rate_hz;
 }

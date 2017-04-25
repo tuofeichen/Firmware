@@ -193,7 +193,7 @@ namespace
 ADCSIM	*g_adc;
 
 int
-test()
+test(void)
 {
 	DevHandle h;
 	DevMgr::getHandle(ADCSIM0_DEVICE_PATH, h);

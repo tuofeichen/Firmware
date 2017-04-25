@@ -44,7 +44,7 @@
 #include <unistd.h>
 
 #include <px4_config.h>
-#include <px4_tasks.h>
+#include <nuttx/sched.h>
 
 #include <systemlib/systemlib.h>
 #include <systemlib/err.h>

@@ -35,12 +35,11 @@ px4_add_module(
 	MAIN camera_trigger
 	STACK_MAIN 1200
 	COMPILE_FLAGS
+		-Os
 	SRCS
 		camera_trigger.cpp
-                interfaces/src/camera_interface.cpp
-                interfaces/src/pwm.cpp
-                interfaces/src/relay.cpp
+		camera_trigger_params.c
 	DEPENDS
 		platforms__common
 	)
-# vim: set noet ft=cmake fenc=utf-8 ff=unix :
+# vim: set noet ft=cmake fenc=utf-8 ff=unix : 

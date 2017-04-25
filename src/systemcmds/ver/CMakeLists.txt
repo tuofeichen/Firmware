@@ -35,9 +35,10 @@ px4_add_module(
 	MAIN ver
 	STACK_MAIN 1024
 	COMPILE_FLAGS
+		-Os
 	SRCS
 		ver.c
 	DEPENDS
 		platforms__common
 	)
-# vim: set noet ft=cmake fenc=utf-8 ff=unix :
+# vim: set noet ft=cmake fenc=utf-8 ff=unix : 

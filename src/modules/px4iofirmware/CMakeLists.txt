@@ -40,12 +40,9 @@ set_directory_properties(PROPERTIES
 set(c_flags)
 set(exe_linker_flags)
 set(cxx_flags)
-set(optimization_flags)
 set(include_dirs)
 set(link_dirs)
 set(definitions)
-
-px4_nuttx_configure(HWCLASS m3 CONFIG nsh)
 
 px4_os_prebuild_targets(OUT io_prebuild_targets
 	BOARD ${config_io_board}
@@ -55,19 +52,18 @@ px4_os_add_flags(
 	BOARD ${config_io_board}
 	C_FLAGS c_flags
 	CXX_FLAGS cxx_flags
-	OPTIMIZATION_FLAGS optimization_flags
 	EXE_LINKER_FLAGS exe_linker_flags
 	INCLUDE_DIRS include_dirs
 	LINK_DIRS link_dirs
 	DEFINITIONS definitions)
 
 px4_join(OUT CMAKE_EXE_LINKER_FLAGS LIST "${exe_linker_flags}" GLUE " ")
-px4_join(OUT CMAKE_C_FLAGS LIST "${c_flags};${optimization_flags}" GLUE " ")
-px4_join(OUT CMAKE_CXX_FLAGS LIST "${cxx_flags};${optimization_flags}" GLUE " ")
+px4_join(OUT CMAKE_C_FLAGS LIST "${c_flags}" GLUE " ")
+px4_join(OUT CMAKE_CXX_FLAGS LIST "${cxx_flags}" GLUE " ")
 
 include_directories(
 	${include_dirs}
-	${PX4_BINARY_DIR}/src/modules/systemlib/mixer
+	${CMAKE_BINARY_DIR}/src/modules/systemlib/mixer
 	.
 	)
 link_directories(${link_dirs})
@@ -85,7 +81,6 @@ set(srcs
 	../systemlib/mixer/mixer.cpp
 	../systemlib/mixer/mixer_group.cpp
 	../systemlib/mixer/mixer_multirotor.cpp
-	../systemlib/mixer/mixer_helicopter.cpp
 	../systemlib/mixer/mixer_simple.cpp
 	../systemlib/pwm_limit/pwm_limit.c
 	../../lib/rc/st24.c
@@ -122,10 +117,10 @@ add_dependencies(${fw_io_name}
 	mixer_gen
 	)
 
-set(nuttx_export_dir ${PX4_BINARY_DIR}/${config_io_board}/NuttX/nuttx/nuttx-export)
+set(nuttx_export_dir ${CMAKE_BINARY_DIR}/${config_io_board}/NuttX/nuttx-export)
 set(main_link_flags
 	"-T${nuttx_export_dir}/build/ld.script"
-	"-Wl,-Map=${PX4_BINARY_DIR}/${config_io_board}/main.map"
+	"-Wl,-Map=${CMAKE_BINARY_DIR}/${config_io_board}/main.map"
 	)
 px4_join(OUT main_link_flags LIST ${main_link_flags} GLUE " ")
 set_target_properties(${fw_io_name} PROPERTIES LINK_FLAGS ${main_link_flags})

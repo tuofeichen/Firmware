@@ -1,8 +1,8 @@
 /************************************************************************************
- * src/modules/systemlib/up_cxxinitialize.c
+ * configs/stm32f4discovery/src/up_cxxinitialize.c
  * arch/arm/src/board/up_cxxinitialize.c
  *
- *   Copyright (C) 2013 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2012 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,12 +54,25 @@
 /* Debug ****************************************************************************/
 /* Non-standard debug that may be enabled just for testing the static constructors */
 
-#undef CONFIG_DEBUG_CXX
+#ifndef CONFIG_DEBUG
+#  undef CONFIG_DEBUG_CXX
+#endif
 
 #ifdef CONFIG_DEBUG_CXX
-#    define cxxinfo  _info
+#  define cxxdbg              dbg
+#  define cxxlldbg            lldbg
+#  ifdef CONFIG_DEBUG_VERBOSE
+#    define cxxvdbg           vdbg
+#    define cxxllvdbg         llvdbg
 #  else
-#    define cxxinfo(x...)
+#    define cxxvdbg(x...)
+#    define cxxllvdbg(x...)
+#  endif
+#else
+#  define cxxdbg(x...)
+#  define cxxlldbg(x...)
+#  define cxxvdbg(x...)
+#  define cxxllvdbg(x...)
 #endif
 
 /************************************************************************************
@@ -115,14 +128,14 @@ void up_cxxinitialize(void)
 {
 	initializer_t *initp;
 
-	cxxinfo("_sinit: %p _einit: %p _stext: %p _etext: %p\n",
-		&_sinit, &_einit, &_stext, &_etext);
+	cxxdbg("_sinit: %p _einit: %p _stext: %p _etext: %p\n",
+	       &_sinit, &_einit, &_stext, &_etext);
 
 	/* Visit each entry in the initialzation table */
 
 	for (initp = &_sinit; initp != &_einit; initp++) {
 		initializer_t initializer = *initp;
-		cxxinfo("initp: %p initializer: %p\n", initp, initializer);
+		cxxdbg("initp: %p initializer: %p\n", initp, initializer);
 
 		/* Make sure that the address is non-NULL and lies in the text region
 		 * defined by the linker script.  Some toolchains may put NULL values
@@ -130,7 +143,7 @@ void up_cxxinitialize(void)
 		 */
 
 		if ((void *)initializer > (void *)&_stext && (void *)initializer < (void *)&_etext) {
-			cxxinfo("Calling %p\n", initializer);
+			cxxdbg("Calling %p\n", initializer);
 			initializer();
 		}
 	}

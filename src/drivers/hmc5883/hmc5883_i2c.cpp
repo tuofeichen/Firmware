@@ -113,16 +113,17 @@ HMC5883_I2C::ioctl(unsigned operation, unsigned &arg)
 	switch (operation) {
 
 	case MAGIOCGEXTERNAL:
-#ifdef PX4_I2C_BUS_ONBOARD
-		if (_bus == PX4_I2C_BUS_ONBOARD) {
-			return 0;
+// On PX4v1 the MAG can be on an internal I2C
+// On everything else its always external
+#ifdef CONFIG_ARCH_BOARD_PX4FMU_V1
+		if (_bus == PX4_I2C_BUS_EXPANSION) {
+			return 1;
 
 		} else {
-			return 1;
+			return 0;
 		}
 
 #else
-		/* assume external for all boards that don't define PX4_I2C_BUS_ONBOARD */
 		return 1;
 #endif
 

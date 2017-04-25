@@ -37,7 +37,7 @@
  * PX4FMU LED backend.
  */
 
-#include <px4_config.h>
+#include <nuttx/config.h>
 
 #include <stdbool.h>
 

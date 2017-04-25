@@ -47,8 +47,8 @@ namespace uavcan_node
 
 struct AllocatorSynchronizer
 {
-	const ::irqstate_t state = ::enter_critical_section();
-	~AllocatorSynchronizer() { ::leave_critical_section(state); }
+	const ::irqstate_t state = ::irqsave();
+	~AllocatorSynchronizer() { ::irqrestore(state); }
 };
 
 struct Allocator : public uavcan::HeapBasedPoolAllocator<uavcan::MemPoolBlockSize, AllocatorSynchronizer>

@@ -75,9 +75,7 @@ private:
 		float front_trans_timeout;
 		float front_trans_time_min;
 		float down_pitch_max;
-		float forward_thrust_scale;
-		int airspeed_mode;
-		float pitch_setpoint_offset;
+		float forward_thurst_scale;
 	} _params_standard;
 
 	struct {
@@ -89,9 +87,7 @@ private:
 		param_t front_trans_timeout;
 		param_t front_trans_time_min;
 		param_t down_pitch_max;
-		param_t forward_thrust_scale;
-		param_t airspeed_mode;
-		param_t pitch_setpoint_offset;
+		param_t forward_thurst_scale;
 	} _params_handles_standard;
 
 	enum vtol_mode {
@@ -107,11 +103,12 @@ private:
 	} _vtol_schedule;
 
 	bool _flag_enable_mc_motors;
-	float _pusher_throttle;
+	float _pusher_throttle;	
 	float _airspeed_trans_blend_margin;
 
 	void set_max_mc(unsigned pwm_value);
 
-	virtual void parameters_update();
+	int parameters_update();
+
 };
 #endif

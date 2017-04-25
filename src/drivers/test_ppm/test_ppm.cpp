@@ -118,7 +118,7 @@ TEST_PPM::~TEST_PPM()
 int
 TEST_PPM::init()
 {
-	px4_arch_configgpio(TEST_PPM_PIN);
+	stm32_configgpio(TEST_PPM_PIN);
 	start();
 	return OK;
 }
@@ -148,11 +148,11 @@ void
 TEST_PPM::do_out(void)
 {
 	if ((_call_times % 2) == 0) {
-		px4_arch_gpiowrite(TEST_PPM_PIN, false);
+		stm32_gpiowrite(TEST_PPM_PIN, false);
 		hrt_call_after(&_call, _values[_call_times / 2] - _plus_width, (hrt_callout)&TEST_PPM::loops, this);
 
 	} else {
-		px4_arch_gpiowrite(TEST_PPM_PIN, true);
+		stm32_gpiowrite(TEST_PPM_PIN, true);
 		hrt_call_after(&_call, _plus_width, (hrt_callout)&TEST_PPM::loops, this);
 	}
 
@@ -201,7 +201,7 @@ start(unsigned  channels)
 fail:
 
 	if (g_test != nullptr) {
-		delete (g_test);
+		delete(g_test);
 		g_test = nullptr;
 	}
 

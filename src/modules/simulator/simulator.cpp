@@ -44,10 +44,9 @@
 #include <systemlib/err.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <drivers/drv_board_led.h>
+#include <drivers/drv_led.h>
 
 #include "simulator.h"
 
@@ -55,7 +54,7 @@ using namespace simulator;
 
 static px4_task_t g_sim_task = -1;
 
-Simulator *Simulator::_instance = nullptr;
+Simulator *Simulator::_instance = NULL;
 
 Simulator *Simulator::getInstance()
 {
@@ -125,26 +124,21 @@ void Simulator::write_airspeed_data(void *buf)
 int Simulator::start(int argc, char *argv[])
 {
 	int ret = 0;
-	int udp_port = 0;
 	_instance = new Simulator();
 
 	if (_instance) {
 		drv_led_start();
 
-		if (argc == 5 && strcmp(argv[3], "-u") == 0) {
-			udp_port = atoi(argv[4]);
-		}
-
 		if (argv[2][1] == 's') {
 			_instance->initializeSensorData();
 #ifndef __PX4_QURT
 			// Update sensor data
-			_instance->pollForMAVLinkMessages(false, udp_port);
+			_instance->pollForMAVLinkMessages(false);
 #endif
 
 		} else if (argv[2][1] == 'p') {
 			// Update sensor data
-			_instance->pollForMAVLinkMessages(true, udp_port);
+			_instance->pollForMAVLinkMessages(true);
 
 		} else {
 			_instance->initializeSensorData();
@@ -161,7 +155,7 @@ int Simulator::start(int argc, char *argv[])
 
 static void usage()
 {
-	PX4_WARN("Usage: simulator {start -[spt] [-u udp_port] |stop}");
+	PX4_WARN("Usage: simulator {start -[spt] |stop}");
 	PX4_WARN("Simulate raw sensors:     simulator start -s");
 	PX4_WARN("Publish sensors combined: simulator start -p");
 	PX4_WARN("Dummy unit test data:     simulator start -t");
@@ -177,7 +171,7 @@ extern "C" {
 	{
 		int ret = 0;
 
-		if (argc > 2 && strcmp(argv[1], "start") == 0) {
+		if (argc == 3 && strcmp(argv[1], "start") == 0) {
 			if (strcmp(argv[2], "-s") == 0 ||
 			    strcmp(argv[2], "-p") == 0 ||
 			    strcmp(argv[2], "-t") == 0) {
@@ -198,7 +192,7 @@ extern "C" {
 								argv);
 
 				// now wait for the command to complete
-				while (!px4_exit_requested()) {
+				while (true) {
 					if (Simulator::getInstance() && Simulator::getInstance()->isInitialized()) {
 						break;
 

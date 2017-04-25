@@ -39,7 +39,6 @@
  */
 
 #include <px4_config.h>
-#include <px4_defines.h>
 
 #include <drivers/device/i2c.h>
 
@@ -91,6 +90,12 @@
 
 #define TRONE_CONVERSION_INTERVAL 50000 /* 50ms */
 
+/* oddly, ERROR is not defined for c++ */
+#ifdef ERROR
+# undef ERROR
+#endif
+static const int ERROR = -1;
+
 #ifndef CONFIG_SCHED_WORKQUEUE
 # error This requires CONFIG_SCHED_WORKQUEUE.
 #endif
@@ -130,6 +135,7 @@ private:
 
 	perf_counter_t		_sample_perf;
 	perf_counter_t		_comms_errors;
+	perf_counter_t		_buffer_overflows;
 
 	/**
 	* Test whether the device supported by the driver is present at a
@@ -237,7 +243,8 @@ TRONE::TRONE(int bus, int address) :
 	_orb_class_instance(-1),
 	_distance_sensor_topic(nullptr),
 	_sample_perf(perf_alloc(PC_ELAPSED, "tr1_read")),
-	_comms_errors(perf_alloc(PC_COUNT, "tr1_com_err"))
+	_comms_errors(perf_alloc(PC_COUNT, "tr1_com_err")),
+	_buffer_overflows(perf_alloc(PC_COUNT, "tr1_buf_of"))
 {
 	// up the retries since the device misses the first measure attempts
 	I2C::_retries = 3;
@@ -266,12 +273,13 @@ TRONE::~TRONE()
 	// free perf counters
 	perf_free(_sample_perf);
 	perf_free(_comms_errors);
+	perf_free(_buffer_overflows);
 }
 
 int
 TRONE::init()
 {
-	int ret = PX4_ERROR;
+	int ret = ERROR;
 
 	/* do I2C init (and probe) first */
 	if (I2C::init() != OK) {
@@ -434,14 +442,14 @@ TRONE::ioctl(struct file *filp, int cmd, unsigned long arg)
 				return -EINVAL;
 			}
 
-			irqstate_t flags = px4_enter_critical_section();
+			irqstate_t flags = irqsave();
 
 			if (!_reports->resize(arg)) {
-				px4_leave_critical_section(flags);
+				irqrestore(flags);
 				return -ENOMEM;
 			}
 
-			px4_leave_critical_section(flags);
+			irqrestore(flags);
 
 			return OK;
 		}
@@ -596,7 +604,9 @@ TRONE::collect()
 		orb_publish(ORB_ID(distance_sensor), _distance_sensor_topic, &report);
 	}
 
-	_reports->force(&report);
+	if (_reports->force(&report)) {
+		perf_count(_buffer_overflows);
+	}
 
 	/* notify anyone waiting for data */
 	poll_notify(POLLIN);
@@ -618,12 +628,12 @@ TRONE::start()
 	work_queue(HPWORK, &_work, (worker_t)&TRONE::cycle_trampoline, this, 1);
 
 	/* notify about state change */
-	struct subsystem_info_s info = {};
-	info.present = true;
-	info.enabled = true;
-	info.ok = true;
-	info.subsystem_type = subsystem_info_s::SUBSYSTEM_TYPE_RANGEFINDER;
-
+	struct subsystem_info_s info = {
+		true,
+		true,
+		true,
+		subsystem_info_s::SUBSYSTEM_TYPE_RANGEFINDER
+	};
 	static orb_advert_t pub = nullptr;
 
 	if (pub != nullptr) {
@@ -701,6 +711,7 @@ TRONE::print_info()
 {
 	perf_print_counter(_sample_perf);
 	perf_print_counter(_comms_errors);
+	perf_print_counter(_buffer_overflows);
 	printf("poll interval:  %u ticks\n", _measure_ticks);
 	_reports->print_info("report queue");
 }
@@ -710,6 +721,12 @@ TRONE::print_info()
  */
 namespace trone
 {
+
+/* oddly, ERROR is not defined for c++ */
+#ifdef ERROR
+# undef ERROR
+#endif
+const int ERROR = -1;
 
 TRONE	*g_dev;
 

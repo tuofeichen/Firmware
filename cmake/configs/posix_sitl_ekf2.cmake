@@ -1,5 +1,5 @@
-include(cmake/configs/posix_sitl_default.cmake)
+include(cmake/configs/posix_sitl_base.cmake)
 
-set(config_sitl_rcS_dir
-	posix-configs/SITL/init/ekf2
+set(config_sitl_rcS
+	posix-configs/SITL/init/rcS_ekf2
 	)

@@ -39,7 +39,6 @@
  */
 
 #include <px4_config.h>
-#include <px4_defines.h>
 
 #include <drivers/device/i2c.h>
 
@@ -83,6 +82,12 @@
 /* Default I2C bus */
 #define PX4_I2C_BUS_DEFAULT		PX4_I2C_BUS_EXPANSION
 
+/* Oddly, ERROR is not defined for C++ */
+#ifdef ERROR
+# undef ERROR
+#endif
+static const int ERROR = -1;
+
 #ifndef CONFIG_SCHED_WORKQUEUE
 # error This requires CONFIG_SCHED_WORKQUEUE.
 #endif
@@ -105,6 +110,7 @@ public:
 
 private:
 	ringbuffer::RingBuffer		*_reports;
+	perf_counter_t		_buffer_overflows;
 
 	/* this class has pointer data members and should not be copied */
 	Airspeed(const Airspeed &);

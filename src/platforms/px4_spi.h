@@ -1,8 +1,7 @@
 #pragma once
 
 #ifdef __PX4_NUTTX
-#include <nuttx/config.h>
-#include <nuttx/spi/spi.h>
+#include <nuttx/spi.h>
 #elif defined(__PX4_POSIX)
 enum spi_dev_e {
 	SPIDEV_NONE = 0,    /* Not a valid value */

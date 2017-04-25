@@ -43,9 +43,17 @@
  * Included Files
  ****************************************************************************************************/
 
-#include <px4_config.h>
+#include <nuttx/config.h>
 #include <nuttx/compiler.h>
 #include <stdint.h>
+
+__BEGIN_DECLS
+
+/* these headers are not C++ safe */
+#include <stm32.h>
+#include <arch/board/board.h>
+
+#define UDID_START		0x1FFF7A10
 
 /****************************************************************************************************
  * Definitions
@@ -79,10 +87,6 @@
 #define HRT_TIMER		8	/* use timer8 for the HRT */
 #define HRT_TIMER_CHANNEL	1	/* use capture/compare channel */
 
-#define BOARD_NAME "PX4_STM32F4DISCOVERY"
-
-__BEGIN_DECLS
-
 /****************************************************************************************************
  * Public Types
  ****************************************************************************************************/
@@ -107,17 +111,26 @@ __BEGIN_DECLS
 
 extern void stm32_spiinitialize(void);
 
-/****************************************************************************************************
- * Name: stm32_usbinitialize
- *
- * Description:
- *   Called to configure USB IO.
- *
- ****************************************************************************************************/
-
 extern void stm32_usbinitialize(void);
 
-#include "../common/board_common.h"
+/****************************************************************************
+ * Name: nsh_archinitialize
+ *
+ * Description:
+ *   Perform architecture specific initialization for NSH.
+ *
+ *   CONFIG_NSH_ARCHINIT=y :
+ *     Called from the NSH library
+ *
+ *   CONFIG_BOARD_INITIALIZE=y, CONFIG_NSH_LIBRARY=y, &&
+ *   CONFIG_NSH_ARCHINIT=n :
+ *     Called from board_initialize().
+ *
+ ****************************************************************************/
+
+#ifdef CONFIG_NSH_LIBRARY
+int nsh_archinitialize(void);
+#endif
 
 #endif /* __ASSEMBLY__ */
 

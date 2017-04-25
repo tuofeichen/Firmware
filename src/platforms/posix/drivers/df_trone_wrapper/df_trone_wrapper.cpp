@@ -56,7 +56,6 @@
 #include <systemlib/err.h>
 
 #include <drivers/drv_range_finder.h>
-#include <drivers/drv_hrt.h>
 
 #include <uORB/uORB.h>
 #include <uORB/topics/subsystem_info.h>
@@ -118,6 +117,10 @@ DfTROneWrapper::~DfTROneWrapper()
 
 int DfTROneWrapper::start()
 {
+	struct distance_sensor_s d;
+	_range_topic = orb_advertise_multi(ORB_ID(distance_sensor), &d,
+					   &_orb_class_instance, ORB_PRIO_DEFAULT);
+
 	int ret;
 
 	/* Init device and start sensor. */
@@ -153,6 +156,10 @@ int DfTROneWrapper::stop()
 
 int DfTROneWrapper::_publish(struct range_sensor_data &data)
 {
+	if (!_range_topic) {
+		return 1;
+	}
+
 	struct distance_sensor_s d;
 
 	memset(&d, 0, sizeof(d));
@@ -173,13 +180,7 @@ int DfTROneWrapper::_publish(struct range_sensor_data &data)
 
 	d.covariance = 0.0f;
 
-	if (_range_topic == nullptr) {
-		_range_topic = orb_advertise_multi(ORB_ID(distance_sensor), &d,
-						   &_orb_class_instance, ORB_PRIO_DEFAULT);
-
-	} else {
-		orb_publish(ORB_ID(distance_sensor), _range_topic, &d);
-	}
+	orb_publish(ORB_ID(distance_sensor), _range_topic, &d);
 
 	/* Notify anyone waiting for data. */
 	DevMgr::updateNotify(*this);

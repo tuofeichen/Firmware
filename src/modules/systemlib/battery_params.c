@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013-2017 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2013-2016 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,117 +43,43 @@
 #include <systemlib/param/param.h>
 
 /**
- * Empty cell voltage (5C load)
+ * Empty cell voltage.
  *
  * Defines the voltage where a single cell of the battery is considered empty.
- * The voltage should be chosen before the steep dropoff to 2.8V. A typical
- * lithium battery can only be discharged down to 10% before it drops off
- * to a voltage level damaging the cells.
  *
  * @group Battery Calibration
  * @unit V
  * @decimal 2
  * @increment 0.01
- * @reboot_required true
  */
 PARAM_DEFINE_FLOAT(BAT_V_EMPTY, 3.4f);
 
 /**
- * Full cell voltage (5C load)
+ * Full cell voltage.
  *
- * Defines the voltage where a single cell of the battery is considered full
- * under a mild load. This will never be the nominal voltage of 4.2V
+ * Defines the voltage where a single cell of the battery is considered full.
  *
  * @group Battery Calibration
  * @unit V
  * @decimal 2
  * @increment 0.01
- * @reboot_required true
  */
-PARAM_DEFINE_FLOAT(BAT_V_CHARGED, 4.05f);
+PARAM_DEFINE_FLOAT(BAT_V_CHARGED, 4.2f);
 
 /**
- * Low threshold
- *
- * Sets the threshold when the battery will be reported as low.
- * This has to be higher than the critical threshold.
- *
- * @group Battery Calibration
- * @unit norm
- * @min 0.12
- * @max 0.4
- * @decimal 2
- * @increment 0.01
- * @reboot_required true
- */
-PARAM_DEFINE_FLOAT(BAT_LOW_THR, 0.15f);
-
-/**
- * Critical threshold
- *
- * Sets the threshold when the battery will be reported as critically low.
- * This has to be lower than the low threshold. This threshold commonly
- * will trigger RTL.
- *
- * @group Battery Calibration
- * @unit norm
- * @min 0.05
- * @max 0.1
- * @decimal 2
- * @increment 0.01
- * @reboot_required true
- */
-PARAM_DEFINE_FLOAT(BAT_CRIT_THR, 0.07f);
-
-/**
- * Emergency threshold
- *
- * Sets the threshold when the battery will be reported as dangerously low.
- * This has to be lower than the critical threshold. This threshold commonly
- * will trigger landing.
- *
- * @group Battery Calibration
- * @unit norm
- * @min 0.03
- * @max 0.07
- * @decimal 2
- * @increment 0.01
- * @reboot_required true
- */
-PARAM_DEFINE_FLOAT(BAT_EMERGEN_THR, 0.05f);
-
-/**
- * Voltage drop per cell on full throttle
+ * Voltage drop per cell on 100% load
  *
  * This implicitely defines the internal resistance
  * to maximum current ratio and assumes linearity.
- * A good value to use is the difference between the
- * 5C and 20-25C load. Not used if BAT_R_INTERNAL is
- * set.
  *
  * @group Battery Calibration
  * @unit V
- * @min 0.07
- * @max 0.5
+ * @min 0.0
+ * @max 1.5
  * @decimal 2
  * @increment 0.01
- * @reboot_required true
  */
-PARAM_DEFINE_FLOAT(BAT_V_LOAD_DROP, 0.3f);
-
-/**
- * Explicitly defines the per cell internal resistance
- *
- * If non-negative, then this will be used in place of
- * BAT_V_LOAD_DROP for all calculations.
- *
- * @group Battery Calibration
- * @unit Ohms
- * @min -1.0
- * @max 0.2
- * @reboot_required true
- */
-PARAM_DEFINE_FLOAT(BAT_R_INTERNAL, -1.0f);
+PARAM_DEFINE_FLOAT(BAT_V_LOAD_DROP, 0.07f);
 
 /**
  * Number of cells.
@@ -162,7 +88,8 @@ PARAM_DEFINE_FLOAT(BAT_R_INTERNAL, -1.0f);
  *
  * @group Battery Calibration
  * @unit S
- * @value 0 Unconfigured
+ * @min 2
+ * @max 10
  * @value 2 2S Battery
  * @value 3 3S Battery
  * @value 4 4S Battery
@@ -178,9 +105,8 @@ PARAM_DEFINE_FLOAT(BAT_R_INTERNAL, -1.0f);
  * @value 14 14S Battery
  * @value 15 15S Battery
  * @value 16 16S Battery
- * @reboot_required true
  */
-PARAM_DEFINE_INT32(BAT_N_CELLS, 0);
+PARAM_DEFINE_INT32(BAT_N_CELLS, 3);
 
 /**
  * Battery capacity.
@@ -193,6 +119,5 @@ PARAM_DEFINE_INT32(BAT_N_CELLS, 0);
  * @min -1.0
  * @max 100000
  * @increment 50
- * @reboot_required true
  */
 PARAM_DEFINE_FLOAT(BAT_CAPACITY, -1.0f);

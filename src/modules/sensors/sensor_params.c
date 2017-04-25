@@ -688,25 +688,6 @@ PARAM_DEFINE_INT32(CAL_GYRO_PRIME, 0);
 PARAM_DEFINE_INT32(CAL_MAG_PRIME, 0);
 
 /**
- * Bitfield selecting mag sides for calibration
- *
- * DETECT_ORIENTATION_TAIL_DOWN = 1
- * DETECT_ORIENTATION_NOSE_DOWN = 2
- * DETECT_ORIENTATION_LEFT = 4
- * DETECT_ORIENTATION_RIGHT = 8
- * DETECT_ORIENTATION_UPSIDE_DOWN = 16
- * DETECT_ORIENTATION_RIGHTSIDE_UP = 32
- *
- * @min 34
- * @max 63
- * @value 34 Two side calibration
- * @value 38 Three side calibration
- * @value 63 Six side calibration
- * @group Sensor Calibration
- */
-PARAM_DEFINE_INT32(CAL_MAG_SIDES, 63);
-
-/**
  * Primary baro ID
  *
  * @group Sensor Calibration
@@ -786,9 +767,8 @@ PARAM_DEFINE_INT32(SENS_BOARD_ROT, 0);
 /**
  * PX4Flow board rotation
  *
- * This parameter defines the yaw rotation of the PX4FLOW board relative to the vehicle body frame.
- * Zero rotation is defined as X on flow board pointing towards front of vehicle.
- * The recommneded installation default for the PX4FLOW board is with the Y axis forward (270 deg yaw).
+ * This parameter defines the rotation of the PX4FLOW board relative to the platform.
+ * Zero rotation is defined as Y on flow board pointing towards front of vehicle
  *
  * @value 0 No rotation
  * @value 1 Yaw 45°
@@ -803,7 +783,7 @@ PARAM_DEFINE_INT32(SENS_BOARD_ROT, 0);
  *
  * @group Sensor Calibration
  */
-PARAM_DEFINE_INT32(SENS_FLOW_ROT, 6);
+PARAM_DEFINE_INT32(SENS_FLOW_ROT, 0);
 
 /**
  * Board rotation Y (Pitch) offset
@@ -883,16 +863,6 @@ PARAM_DEFINE_INT32(SENS_EXT_MAG_ROT, 0);
  * @group Sensor Calibration
  */
 PARAM_DEFINE_INT32(SENS_EXT_MAG, 0);
-
-/**
- * Threshold (of RMS) to warn about high vibration levels
- *
- * @group Sensor Calibration
- * @min 0.01
- * @max 10
- * @decimal 2
- */
-PARAM_DEFINE_FLOAT(ATT_VIBE_THRESH, 0.2f);
 
 
 /**
@@ -1943,7 +1913,7 @@ PARAM_DEFINE_FLOAT(RC18_REV, 1.0f);
 PARAM_DEFINE_FLOAT(RC18_DZ, 0.0f);
 
 /**
- * Relay control of relay 1 mapped to the Spektrum receiver power supply
+ * Enable relay control of relay 1 mapped to the Spektrum receiver power supply
  *
  * @min 0
  * @max 1
@@ -1975,80 +1945,28 @@ PARAM_DEFINE_INT32(RC_DSM_BIND, -1);
 PARAM_DEFINE_INT32(BAT_V_SCALE_IO, 10000);
 
 /**
- * Scaling from ADC counts to volt on the ADC input (battery voltage)
- *
- * This is not the battery voltage, but the intermediate ADC voltage.
- * A value of -1 signifies that the board defaults are used, which is
- * highly recommended.
+ * Scaling factor for battery voltage sensor on FMU v2.
  *
  * @group Battery Calibration
  * @decimal 8
  */
-PARAM_DEFINE_FLOAT(BAT_CNT_V_VOLT, -1.0f);
+PARAM_DEFINE_FLOAT(BAT_V_SCALING, -1.0f);
 
 /**
- * Scaling from ADC counts to volt on the ADC input (battery current)
- *
- * This is not the battery current, but the intermediate ADC voltage.
- * A value of -1 signifies that the board defaults are used, which is
- * highly recommended.
+ * Scaling factor for battery current sensor.
  *
  * @group Battery Calibration
  * @decimal 8
  */
-PARAM_DEFINE_FLOAT(BAT_CNT_V_CURR, -1.0);
+PARAM_DEFINE_FLOAT(BAT_C_SCALING, -1.0);
 
 /**
- * Offset in volt as seen by the ADC input of the current sensor.
- *
- * This offset will be subtracted before calculating the battery
- * current based on the voltage.
+ * Offset for battery current sensor.
  *
  * @group Battery Calibration
  * @decimal 8
  */
-PARAM_DEFINE_FLOAT(BAT_V_OFFS_CURR, 0.0);
-
-/**
- * Battery voltage divider (V divider)
- *
- * This is the divider from battery voltage to 3.3V ADC voltage.
- * If using e.g. Mauch power modules the value from the datasheet
- * can be applied straight here. A value of -1 means to use
- * the board default.
- *
- * @group Battery Calibration
- * @decimal 8
- */
-PARAM_DEFINE_FLOAT(BAT_V_DIV, -1.0);
-
-/**
- * Battery current per volt (A/V)
- *
- * The voltage seen by the 3.3V ADC multiplied by this factor
- * will determine the battery current. A value of -1 means to use
- * the board default.
- *
- * @group Battery Calibration
- * @decimal 8
- */
-PARAM_DEFINE_FLOAT(BAT_A_PER_V, -1.0);
-
-/**
- * Battery monitoring source.
- *
- * This parameter controls the source of battery data. The value 'Power Module'
- * means that measurements are expected to come from a power module. If the value is set to
- * 'External' then the system expects to receive mavlink battery status messages.
- *
- * @min 0
- * @max 1
- * @value 0 Power Module
- * @value 1 External
- * @group Battery Calibration
- */
-
-PARAM_DEFINE_INT32(BAT_SOURCE, 0);
+PARAM_DEFINE_FLOAT(BAT_C_OFFSET, -1.0);
 
 
 /**
@@ -2500,34 +2418,6 @@ PARAM_DEFINE_INT32(RC_MAP_OFFB_SW, 0);
 PARAM_DEFINE_INT32(RC_MAP_KILL_SW, 0);
 
 /**
- * Arm switch channel
- *
- * @min 0
- * @max 18
- * @group Radio Switches
- * @value 0 Unassigned
- * @value 1 Channel 1
- * @value 2 Channel 2
- * @value 3 Channel 3
- * @value 4 Channel 4
- * @value 5 Channel 5
- * @value 6 Channel 6
- * @value 7 Channel 7
- * @value 8 Channel 8
- * @value 9 Channel 9
- * @value 10 Channel 10
- * @value 11 Channel 11
- * @value 12 Channel 12
- * @value 13 Channel 13
- * @value 14 Channel 14
- * @value 15 Channel 15
- * @value 16 Channel 16
- * @value 17 Channel 17
- * @value 18 Channel 18
- */
-PARAM_DEFINE_INT32(RC_MAP_ARM_SW, 0);
-
-/**
  * Flaps channel
  *
  * @min 0
@@ -2556,119 +2446,7 @@ PARAM_DEFINE_INT32(RC_MAP_ARM_SW, 0);
 PARAM_DEFINE_INT32(RC_MAP_FLAPS, 0);
 
 /**
- * VTOL transition switch channel mapping
- *
- * @min 0
- * @max 18
- * @group Radio Switches
- * @value 0 Unassigned
- * @value 1 Channel 1
- * @value 2 Channel 2
- * @value 3 Channel 3
- * @value 4 Channel 4
- * @value 5 Channel 5
- * @value 6 Channel 6
- * @value 7 Channel 7
- * @value 8 Channel 8
- * @value 9 Channel 9
- * @value 10 Channel 10
- * @value 11 Channel 11
- * @value 12 Channel 12
- * @value 13 Channel 13
- * @value 14 Channel 14
- * @value 15 Channel 15
- * @value 16 Channel 16
- * @value 17 Channel 17
- * @value 18 Channel 18
- */
-PARAM_DEFINE_INT32(RC_MAP_TRANS_SW, 0);
-
-/**
- * Landing gear switch channel
- *
- * @min 0
- * @max 18
- * @group Radio Switches
- * @value 0 Unassigned
- * @value 1 Channel 1
- * @value 2 Channel 2
- * @value 3 Channel 3
- * @value 4 Channel 4
- * @value 5 Channel 5
- * @value 6 Channel 6
- * @value 7 Channel 7
- * @value 8 Channel 8
- * @value 9 Channel 9
- * @value 10 Channel 10
- * @value 11 Channel 11
- * @value 12 Channel 12
- * @value 13 Channel 13
- * @value 14 Channel 14
- * @value 15 Channel 15
- * @value 16 Channel 16
- * @value 17 Channel 17
- * @value 18 Channel 18
- */
-PARAM_DEFINE_INT32(RC_MAP_GEAR_SW, 0);
-
-/**
- * Stabilize switch channel mapping.
- *
- * @min 0
- * @max 18
- * @group Radio Switches
- * @value 0 Unassigned
- * @value 1 Channel 1
- * @value 2 Channel 2
- * @value 3 Channel 3
- * @value 4 Channel 4
- * @value 5 Channel 5
- * @value 6 Channel 6
- * @value 7 Channel 7
- * @value 8 Channel 8
- * @value 9 Channel 9
- * @value 10 Channel 10
- * @value 11 Channel 11
- * @value 12 Channel 12
- * @value 13 Channel 13
- * @value 14 Channel 14
- * @value 15 Channel 15
- * @value 16 Channel 16
- * @value 17 Channel 17
- * @value 18 Channel 18
- */
-PARAM_DEFINE_INT32(RC_MAP_STAB_SW, 0);
-
-/**
- * Manual switch channel mapping.
- *
- * @min 0
- * @max 18
- * @group Radio Switches
- * @value 0 Unassigned
- * @value 1 Channel 1
- * @value 2 Channel 2
- * @value 3 Channel 3
- * @value 4 Channel 4
- * @value 5 Channel 5
- * @value 6 Channel 6
- * @value 7 Channel 7
- * @value 8 Channel 8
- * @value 9 Channel 9
- * @value 10 Channel 10
- * @value 11 Channel 11
- * @value 12 Channel 12
- * @value 13 Channel 13
- * @value 14 Channel 14
- * @value 15 Channel 15
- * @value 16 Channel 16
- * @value 17 Channel 17
- * @value 18 Channel 18
- */
-PARAM_DEFINE_INT32(RC_MAP_MAN_SW, 0);
-
-/**
- * AUX1 Passthrough RC Channel
+ * AUX1 channel
  *
  * Default function: Camera pitch
  *
@@ -2698,7 +2476,7 @@ PARAM_DEFINE_INT32(RC_MAP_MAN_SW, 0);
 PARAM_DEFINE_INT32(RC_MAP_AUX1, 0);
 
 /**
- * AUX2 Passthrough RC Channel
+ * AUX2 channel
  *
  * Default function: Camera roll
  *
@@ -2728,7 +2506,7 @@ PARAM_DEFINE_INT32(RC_MAP_AUX1, 0);
 PARAM_DEFINE_INT32(RC_MAP_AUX2, 0);
 
 /**
- * AUX3 Passthrough RC Channel
+ * AUX3 Channel
  *
  * Default function: Camera azimuth / yaw
  *
@@ -2756,62 +2534,6 @@ PARAM_DEFINE_INT32(RC_MAP_AUX2, 0);
  * @value 18 Channel 18
  */
 PARAM_DEFINE_INT32(RC_MAP_AUX3, 0);
-
-/**
- * AUX4 Passthrough RC Channel
- *
- * @min 0
- * @max 18
- * @group Radio Calibration
- * @value 0 Unassigned
- * @value 1 Channel 1
- * @value 2 Channel 2
- * @value 3 Channel 3
- * @value 4 Channel 4
- * @value 5 Channel 5
- * @value 6 Channel 6
- * @value 7 Channel 7
- * @value 8 Channel 8
- * @value 9 Channel 9
- * @value 10 Channel 10
- * @value 11 Channel 11
- * @value 12 Channel 12
- * @value 13 Channel 13
- * @value 14 Channel 14
- * @value 15 Channel 15
- * @value 16 Channel 16
- * @value 17 Channel 17
- * @value 18 Channel 18
- */
-PARAM_DEFINE_INT32(RC_MAP_AUX4, 0);
-
-/**
- * AUX5 Passthrough RC Channel
- *
- * @min 0
- * @max 18
- * @group Radio Calibration
- * @value 0 Unassigned
- * @value 1 Channel 1
- * @value 2 Channel 2
- * @value 3 Channel 3
- * @value 4 Channel 4
- * @value 5 Channel 5
- * @value 6 Channel 6
- * @value 7 Channel 7
- * @value 8 Channel 8
- * @value 9 Channel 9
- * @value 10 Channel 10
- * @value 11 Channel 11
- * @value 12 Channel 12
- * @value 13 Channel 13
- * @value 14 Channel 14
- * @value 15 Channel 15
- * @value 16 Channel 16
- * @value 17 Channel 17
- * @value 18 Channel 18
- */
-PARAM_DEFINE_INT32(RC_MAP_AUX5, 0);
 
 /**
  * PARAM1 tuning channel
@@ -3082,96 +2804,6 @@ PARAM_DEFINE_FLOAT(RC_OFFB_TH, 0.5f);
 PARAM_DEFINE_FLOAT(RC_KILLSWITCH_TH, 0.25f);
 
 /**
- * Threshold for the arm switch
- *
- * 0-1 indicate where in the full channel range the threshold sits
- * 		0 : min
- * 		1 : max
- * sign indicates polarity of comparison
- * 		positive : true when channel>th
- * 		negative : true when channel<th
- *
- * @min -1
- * @max 1
- * @group Radio Switches
- *
- *
- */
-PARAM_DEFINE_FLOAT(RC_ARMSWITCH_TH, 0.25f);
-
-/**
- * Threshold for the VTOL transition switch
- *
- * 0-1 indicate where in the full channel range the threshold sits
- * 		0 : min
- * 		1 : max
- * sign indicates polarity of comparison
- * 		positive : true when channel>th
- * 		negative : true when channel<th
- *
- * @min -1
- * @max 1
- * @group Radio Switches
- *
- *
- */
-PARAM_DEFINE_FLOAT(RC_TRANS_TH, 0.25f);
-
-/**
- * Threshold for the landing gear switch
- *
- * 0-1 indicate where in the full channel range the threshold sits
- * 		0 : min
- * 		1 : max
- * sign indicates polarity of comparison
- * 		positive : true when channel>th
- * 		negative : true when channel<th
- *
- * @min -1
- * @max 1
- * @group Radio Switches
- *
- *
- */
-PARAM_DEFINE_FLOAT(RC_GEAR_TH, 0.25f);
-
-/**
- * Threshold for the stabilize switch.
- *
- * 0-1 indicate where in the full channel range the threshold sits
- * 		0 : min
- * 		1 : max
- * sign indicates polarity of comparison
- * 		positive : true when channel>th
- * 		negative : true when channel<th
- *
- * @min -1
- * @max 1
- * @group Radio Switches
- *
- *
- */
-PARAM_DEFINE_FLOAT(RC_STAB_TH, 0.5f);
-
-/**
- * Threshold for the manual switch.
- *
- * 0-1 indicate where in the full channel range the threshold sits
- * 		0 : min
- * 		1 : max
- * sign indicates polarity of comparison
- * 		positive : true when channel>th
- * 		negative : true when channel<th
- *
- * @min -1
- * @max 1
- * @group Radio Switches
- *
- *
- */
-PARAM_DEFINE_FLOAT(RC_MAN_TH, 0.5f);
-
-/**
  * PWM input channel that provides RSSI.
  *
  * 0: do not read RSSI from input channel
@@ -3230,7 +2862,7 @@ PARAM_DEFINE_INT32(RC_RSSI_PWM_MAX, 1000);
 PARAM_DEFINE_INT32(RC_RSSI_PWM_MIN, 2000);
 
 /**
- * Lidar-Lite (LL40LS) PWM
+ * Enable Lidar-Lite (LL40LS) pwm driver
  *
  * @reboot_required true
  *
@@ -3240,87 +2872,21 @@ PARAM_DEFINE_INT32(RC_RSSI_PWM_MIN, 2000);
 PARAM_DEFINE_INT32(SENS_EN_LL40LS, 0);
 
 /**
- * Lightware laser rangefinder (serial)
+ * Enable sf0x driver
  *
  * @reboot_required true
- * @min 0
- * @max 4
+ *
+ * @boolean
  * @group Sensor Enable
- * @value 0 Disabled
- * @value 1 SF02
- * @value 2 SF10/a
- * @value 3 SF10/b
- * @value 4 SF10/c
- * @value 5 SF11/c
  */
 PARAM_DEFINE_INT32(SENS_EN_SF0X, 0);
 
 /**
- * Maxbotix Soanr (mb12xx)
- *
- * @reboot_required true
- *
- * @boolean
- * @group Sensor Enable
- */
-PARAM_DEFINE_INT32(SENS_EN_MB12XX, 0);
-
-/**
- * TeraRanger One (trone)
- *
- * @reboot_required true
- *
- * @boolean
- * @group Sensor Enable
- */
-PARAM_DEFINE_INT32(SENS_EN_TRONE, 0);
-
-/**
- * Lightware SF1xx laser rangefinder (i2c)
- *
- * @reboot_required true
- * @min 0
- * @max 4
- * @group Sensor Enable
- * @value 0 Disabled
- * @value 1 SF10/a
- * @value 2 SF10/b
- * @value 3 SF10/c
- * @value 4 SF11/c
- */
-PARAM_DEFINE_INT32(SENS_EN_SF1XX, 0);
-
-/**
- * Thermal control of sensor temperature
- *
- * @value -1 Thermal control unavailable
- * @value 0 Thermal control off
- * @group Sensor Enable
- */
-PARAM_DEFINE_INT32(SENS_EN_THERMAL, -1);
-
-/**
- * Set the PWM output frequency for the main outputs
+ * Set the minimum PWM for the MAIN outputs
  *
  * IMPORTANT: CHANGING THIS PARAMETER REQUIRES A COMPLETE SYSTEM
- * REBOOT IN ORDER TO APPLY THE CHANGES.
- *
- * Set to 400 for industry default or 1000 for high frequency ESCs.
- *
- * @reboot_required true
- *
- * @min -1
- * @max 2000
- * @unit Hz
- * @group PWM Outputs
- */
-PARAM_DEFINE_INT32(PWM_RATE, 400);
-
-/**
- * Set the minimum PWM for the main outputs
- *
- * IMPORTANT: CHANGING THIS PARAMETER REQUIRES A COMPLETE SYSTEM
- * REBOOT IN ORDER TO APPLY THE CHANGES.
+ * REBOOT IN ORDER TO APPLY THE CHANGES. COMPLETELY POWER-CYCLE
+ * THE SYSTEM TO PUT CHANGES INTO EFFECT.
  *
  * Set to 1000 for industry default or 900 to increase servo travel.
  *
@@ -3334,10 +2900,11 @@ PARAM_DEFINE_INT32(PWM_RATE, 400);
 PARAM_DEFINE_INT32(PWM_MIN, 1000);
 
 /**
- * Set the maximum PWM for the main outputs
+ * Set the maximum PWM for the MAIN outputs
  *
  * IMPORTANT: CHANGING THIS PARAMETER REQUIRES A COMPLETE SYSTEM
- * REBOOT IN ORDER TO APPLY THE CHANGES.
+ * REBOOT IN ORDER TO APPLY THE CHANGES. COMPLETELY POWER-CYCLE
+ * THE SYSTEM TO PUT CHANGES INTO EFFECT.
  *
  * Set to 2000 for industry default or 2100 to increase servo travel.
  *
@@ -3351,10 +2918,11 @@ PARAM_DEFINE_INT32(PWM_MIN, 1000);
 PARAM_DEFINE_INT32(PWM_MAX, 2000);
 
 /**
- * Set the disarmed PWM for the main outputs
+ * Set the disarmed PWM for MAIN outputs
  *
  * IMPORTANT: CHANGING THIS PARAMETER REQUIRES A COMPLETE SYSTEM
- * REBOOT IN ORDER TO APPLY THE CHANGES.
+ * REBOOT IN ORDER TO APPLY THE CHANGES. COMPLETELY POWER-CYCLE
+ * THE SYSTEM TO PUT CHANGES INTO EFFECT.
  *
  * This is the PWM pulse the autopilot is outputting if not armed.
  * The main use of this parameter is to silence ESCs when they are disarmed.
@@ -3366,13 +2934,14 @@ PARAM_DEFINE_INT32(PWM_MAX, 2000);
  * @unit us
  * @group PWM Outputs
  */
-PARAM_DEFINE_INT32(PWM_DISARMED, 900);
+PARAM_DEFINE_INT32(PWM_DISARMED, 0);
 
 /**
- * Set the minimum PWM for the auxiliary outputs
+ * Set the minimum PWM for the MAIN outputs
  *
  * IMPORTANT: CHANGING THIS PARAMETER REQUIRES A COMPLETE SYSTEM
- * REBOOT IN ORDER TO APPLY THE CHANGES.
+ * REBOOT IN ORDER TO APPLY THE CHANGES. COMPLETELY POWER-CYCLE
+ * THE SYSTEM TO PUT CHANGES INTO EFFECT.
  *
  * Set to 1000 for default or 900 to increase servo travel
  *
@@ -3386,10 +2955,11 @@ PARAM_DEFINE_INT32(PWM_DISARMED, 900);
 PARAM_DEFINE_INT32(PWM_AUX_MIN, 1000);
 
 /**
- * Set the maximum PWM for the auxiliary outputs
+ * Set the maximum PWM for the MAIN outputs
  *
  * IMPORTANT: CHANGING THIS PARAMETER REQUIRES A COMPLETE SYSTEM
- * REBOOT IN ORDER TO APPLY THE CHANGES.
+ * REBOOT IN ORDER TO APPLY THE CHANGES. COMPLETELY POWER-CYCLE
+ * THE SYSTEM TO PUT CHANGES INTO EFFECT.
  *
  * Set to 2000 for default or 2100 to increase servo travel
  *
@@ -3403,10 +2973,11 @@ PARAM_DEFINE_INT32(PWM_AUX_MIN, 1000);
 PARAM_DEFINE_INT32(PWM_AUX_MAX, 2000);
 
 /**
- * Set the disarmed PWM for auxiliary outputs
+ * Set the disarmed PWM for AUX outputs
  *
  * IMPORTANT: CHANGING THIS PARAMETER REQUIRES A COMPLETE SYSTEM
- * REBOOT IN ORDER TO APPLY THE CHANGES.
+ * REBOOT IN ORDER TO APPLY THE CHANGES. COMPLETELY POWER-CYCLE
+ * THE SYSTEM TO PUT CHANGES INTO EFFECT.
  *
  * This is the PWM pulse the autopilot is outputting if not armed.
  * The main use of this parameter is to silence ESCs when they are disarmed.
@@ -3418,53 +2989,4 @@ PARAM_DEFINE_INT32(PWM_AUX_MAX, 2000);
  * @unit us
  * @group PWM Outputs
  */
-PARAM_DEFINE_INT32(PWM_AUX_DISARMED, 1500);
-
-/**
- * Thrust to PWM model parameter
- *
- * Parameter used to model the relationship between static thrust and motor
- * input PWM. Model is: thrust = (1-factor)*PWM + factor * PWM^2
- *
- * @min 0.0
- * @max 1.0
- * @group PWM Outputs
- */
-PARAM_DEFINE_FLOAT(THR_MDL_FAC, 0.0f);
-
-/**
- * Minimum motor rise time (slew rate limit).
- *
- * Minimum time allowed for the motor input signal to pass through
- * a range of 1000 PWM units. A value x means that the motor signal
- * can only go from 1000 to 2000 PWM in maximum x seconds.
- *
- * Zero means that slew rate limiting is disabled.
- *
- * @min 0.0
- * @unit s/(1000*PWM)
- * @group PWM Outputs
- */
-PARAM_DEFINE_FLOAT(MOT_SLEW_MAX, 0.0f);
-
-/**
- * Sample rate of the remote control values for the low pass filter on roll,pitch, yaw and throttle
- *
- * Has an influence on the cutoff frequency precision.
- *
- * @min 1.0
- * @unit Hz
- * @group Radio Calibration
- */
-PARAM_DEFINE_FLOAT(RC_FLT_SMP_RATE, 50.0f);
-
-/**
- * Cutoff frequency for the low pass filter on roll,pitch, yaw and throttle
- *
- * Does not get set unless below RC_FLT_SMP_RATE/2 because of filter instability characteristics.
- *
- * @min 0.1
- * @unit Hz
- * @group Radio Calibration
- */
-PARAM_DEFINE_FLOAT(RC_FLT_CUTOFF, 10.0f);
+PARAM_DEFINE_INT32(PWM_AUX_DISARMED, 1000);

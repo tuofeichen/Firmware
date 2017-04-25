@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2016, 2017 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2016 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -66,21 +66,6 @@ public:
 	void reset(battery_status_s *battery_status);
 
 	/**
-	 * Get the battery cell count
-	 */
-	int cell_count() { return _param_n_cells.get(); }
-
-	/**
-	 * Get the empty voltage per cell
-	 */
-	float empty_cell_voltage() { return _param_v_empty.get(); }
-
-	/**
-	 * Get the full voltage per cell
-	 */
-	float full_cell_voltage() { return _param_v_full.get(); }
-
-	/**
 	 * Update current battery status message.
 	 *
 	 * @param voltage_v: current voltage in V
@@ -88,33 +73,25 @@ public:
 	 * @param throttle_normalized: throttle from 0 to 1
 	 */
 	void updateBatteryStatus(hrt_abstime timestamp, float voltage_v, float current_a, float throttle_normalized,
-				 bool armed, battery_status_s *status);
+				 battery_status_s *status);
 
 private:
 	void filterVoltage(float voltage_v);
-	void filterCurrent(float current_a);
 	void sumDischarged(hrt_abstime timestamp, float current_a);
-	void estimateRemaining(float voltage_v, float current_a, float throttle_normalized, bool armed);
+	void estimateRemaining(float voltage_v, float throttle_normalized);
 	void determineWarning();
-	void computeScale();
 
 	control::BlockParamFloat _param_v_empty;
 	control::BlockParamFloat _param_v_full;
-	control::BlockParamInt _param_n_cells;
+	control::BlockParamFloat _param_n_cells;
 	control::BlockParamFloat _param_capacity;
 	control::BlockParamFloat _param_v_load_drop;
-	control::BlockParamFloat _param_r_internal;
-	control::BlockParamFloat _param_low_thr;
-	control::BlockParamFloat _param_crit_thr;
-	control::BlockParamFloat _param_emergency_thr;
 
 	float _voltage_filtered_v;
-	float _current_filtered_a;
+	float _throttle_filtered;
 	float _discharged_mah;
-	float _remaining_voltage;		///< normalized battery charge level remaining based on voltage
-	float _remaining_capacity;		///< normalized battery charge level remaining based on capacity
-	float _remaining;			///< normalized battery charge level, selected based on config param
-	float _scale;
+	float _remaining;
 	uint8_t _warning;
 	hrt_abstime _last_timestamp;
 };
+

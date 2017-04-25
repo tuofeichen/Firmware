@@ -80,7 +80,7 @@ float BlockLowPass::update(float input)
 
 	float b = 2 * float(M_PI) * getFCut() * getDt();
 	float a = b / (1 + b);
-	setState(a * input + (1 - a)*getState()); // complimentary on one prev state 
+	setState(a * input + (1 - a)*getState()); // complimentary on one prev state
 	return getState();
 }
 

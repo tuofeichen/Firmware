@@ -199,12 +199,12 @@ PARAM_DEFINE_INT32(VT_ELEV_MC_LOCK, 0);
  *
  * @unit s
  * @min 0.00
- * @max 20.00
+ * @max 10.00
  * @increment 1
  * @decimal 2
  * @group VTOL Attitude Control
  */
-PARAM_DEFINE_FLOAT(VT_F_TRANS_DUR, 5.0f);
+PARAM_DEFINE_FLOAT(VT_F_TRANS_DUR, 3.0f);
 
 /**
  * Duration of a back transition
@@ -213,12 +213,12 @@ PARAM_DEFINE_FLOAT(VT_F_TRANS_DUR, 5.0f);
  *
  * @unit s
  * @min 0.00
- * @max 20.00
+ * @max 10.00
  * @increment 1
  * @decimal 2
  * @group VTOL Attitude Control
  */
-PARAM_DEFINE_FLOAT(VT_B_TRANS_DUR, 4.0f);
+PARAM_DEFINE_FLOAT(VT_B_TRANS_DUR, 2.0f);
 
 /**
  * Transition blending airspeed
@@ -249,12 +249,20 @@ PARAM_DEFINE_FLOAT(VT_ARSP_BLEND, 8.0f);
 PARAM_DEFINE_FLOAT(VT_ARSP_TRANS, 10.0f);
 
 /**
- * Optimal recovery strategy for pitch-weak tailsitters
+ * Enable optimal recovery strategy for pitch-weak tailsitters
  *
  * @boolean
  * @group VTOL Attitude Control
  */
 PARAM_DEFINE_INT32(VT_OPT_RECOV_EN, 0);
+
+/**
+ * Enable weather-vane mode landings for missions
+ *
+ * @boolean
+ * @group VTOL Attitude Control
+ */
+PARAM_DEFINE_INT32(VT_WV_LND_EN, 0);
 
 /**
  * Weather-vane yaw rate scale.
@@ -269,6 +277,14 @@ PARAM_DEFINE_INT32(VT_OPT_RECOV_EN, 0);
  * @group VTOL Attitude Control
  */
 PARAM_DEFINE_FLOAT(VT_WV_YAWR_SCL, 0.15f);
+
+/**
+ * Enable weather-vane mode for loiter
+ *
+ * @boolean
+ * @group VTOL Attitude Control
+ */
+PARAM_DEFINE_INT32(VT_WV_LTR_EN, 0);
 
 /**
  * Front transition timeout
@@ -297,47 +313,10 @@ PARAM_DEFINE_FLOAT(VT_TRANS_TIMEOUT, 15.0f);
 PARAM_DEFINE_FLOAT(VT_TRANS_MIN_TM, 2.0f);
 
 /**
- * QuadChute Altitude
+ * Force VTOL mode takeoff and land
  *
- * Minimum altitude for fixed wing flight, when in fixed wing the altitude drops below this altitude
- * the vehicle will transition back to MC mode and enter failsafe RTL
- * @min 0.0
- * @max 200.0
- * @group VTOL Attitude Control
- */
-PARAM_DEFINE_FLOAT(VT_FW_MIN_ALT, 0.0f);
-
-
-/**
- * QuadChute Max Pith
- *
- * Maximum pitch angle before QuadChute engages
- * Above this the vehicle will transition back to MC mode and enter failsafe RTL
  * @min 0
- * @max 180
+ * @max 1
  * @group VTOL Attitude Control
  */
-PARAM_DEFINE_INT32(VT_FW_QC_P, 0);
-
-/**
- * QuadChute Max Roll
- *
- * Maximum roll angle before QuadChute engages
- * Above this the vehicle will transition back to MC mode and enter failsafe RTL
- * @min 0
- * @max 180
- * @group VTOL Attitude Control
- */
-PARAM_DEFINE_INT32(VT_FW_QC_R, 0);
-
-/**
- * Airspeed less front transition time (open loop)
- *
- * The duration of the front transition when there is no airspeed feedback available.
- *
- * @unit seconds
- * @min 1.0
- * @max 30.0
- * @group VTOL Attitude Control
- */
-PARAM_DEFINE_FLOAT(VT_F_TR_OL_TM, 6.0f);
+PARAM_DEFINE_INT32(VT_NAV_FORCE_VT, 1);

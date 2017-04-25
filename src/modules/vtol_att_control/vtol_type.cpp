@@ -40,11 +40,9 @@
 */
 
 #include "vtol_type.h"
-#include "vtol_att_control_main.h"
-
-#include <cfloat>
+#include "drivers/drv_pwm_output.h"
 #include <px4_defines.h>
-#include <matrix/math.hpp>
+#include "vtol_att_control_main.h"
 
 VtolType::VtolType(VtolAttitudeControl *att_controller) :
 	_attc(att_controller),
@@ -68,8 +66,8 @@ VtolType::VtolType(VtolAttitudeControl *att_controller) :
 	_local_pos = _attc->get_local_pos();
 	_airspeed = _attc->get_airspeed();
 	_batt_status = _attc->get_batt_status();
+	_vehicle_status = _attc->get_vehicle_status();
 	_tecs_status = _attc->get_tecs_status();
-	_land_detected = _attc->get_land_detected();
 	_params = _attc->get_params();
 
 	flag_idle_mc = true;
@@ -85,15 +83,14 @@ VtolType::~VtolType()
 */
 void VtolType::set_idle_mc()
 {
-	const char *dev = PWM_OUTPUT0_DEVICE_PATH;
+	int ret;
+	unsigned servo_count;
+	char *dev = PWM_OUTPUT0_DEVICE_PATH;
 	int fd = px4_open(dev, 0);
 
-	if (fd < 0) {
-		PX4_WARN("can't open %s", dev);
-	}
+	if (fd < 0) {PX4_WARN("can't open %s", dev);}
 
-	unsigned servo_count;
-	int ret = px4_ioctl(fd, PWM_SERVO_GET_COUNT, (unsigned long)&servo_count);
+	ret = px4_ioctl(fd, PWM_SERVO_GET_COUNT, (unsigned long)&servo_count);
 	unsigned pwm_value = _params->idle_pwm_mc;
 	struct pwm_output_values pwm_values;
 	memset(&pwm_values, 0, sizeof(pwm_values));
@@ -105,9 +102,7 @@ void VtolType::set_idle_mc()
 
 	ret = px4_ioctl(fd, PWM_SERVO_SET_MIN_PWM, (long unsigned int)&pwm_values);
 
-	if (ret != OK) {
-		PX4_WARN("failed setting min values");
-	}
+	if (ret != OK) {PX4_WARN("failed setting min values");}
 
 	px4_close(fd);
 
@@ -119,15 +114,13 @@ void VtolType::set_idle_mc()
 */
 void VtolType::set_idle_fw()
 {
-	const char *dev = PWM_OUTPUT0_DEVICE_PATH;
+	int ret;
+	char *dev = PWM_OUTPUT0_DEVICE_PATH;
 	int fd = px4_open(dev, 0);
 
-	if (fd < 0) {
-		PX4_WARN("can't open %s", dev);
-	}
+	if (fd < 0) {PX4_WARN("can't open %s", dev);}
 
 	struct pwm_output_values pwm_values;
-
 	memset(&pwm_values, 0, sizeof(pwm_values));
 
 	for (int i = 0; i < _params->vtol_motor_count; i++) {
@@ -136,11 +129,9 @@ void VtolType::set_idle_fw()
 		pwm_values.channel_count++;
 	}
 
-	int ret = px4_ioctl(fd, PWM_SERVO_SET_MIN_PWM, (long unsigned int)&pwm_values);
+	ret = px4_ioctl(fd, PWM_SERVO_SET_MIN_PWM, (long unsigned int)&pwm_values);
 
-	if (ret != OK) {
-		PX4_WARN("failed setting min values");
-	}
+	if (ret != OK) {PX4_WARN("failed setting min values");}
 
 	px4_close(fd);
 }
@@ -172,56 +163,8 @@ void VtolType::update_fw_state()
 		_tecs_running_ts = hrt_absolute_time();
 	}
 
-	// TECS didn't publish yet or the position controller didn't publish yet AFTER tecs
-	// only wait on TECS we're in a mode where it is actually running
-	if ((!_tecs_running || (_tecs_running && _fw_virtual_att_sp->timestamp <= _tecs_running_ts))
-	    && _v_control_mode->flag_control_altitude_enabled) {
-
+	// tecs didn't publish yet or the position controller didn't publish yet AFTER tecs
+	if (!_tecs_running || (_tecs_running && _fw_virtual_att_sp->timestamp <= _tecs_running_ts)) {
 		waiting_on_tecs();
 	}
-
-	check_quadchute_condition();
-}
-
-void VtolType::update_transition_state()
-{
-	check_quadchute_condition();
-}
-
-bool VtolType::can_transition_on_ground()
-{
-	return !_armed->armed || _land_detected->landed;
-}
-
-void VtolType::check_quadchute_condition()
-{
-
-	if (_armed->armed && !_land_detected->landed) {
-		matrix::Eulerf euler = matrix::Quatf(_v_att->q);
-
-		// fixed-wing minimum altitude
-		if (_params->fw_min_alt > FLT_EPSILON) {
-
-			if (-(_local_pos->z) < _params->fw_min_alt) {
-				_attc->abort_front_transition("Minimum altitude breached");
-			}
-		}
-
-		// fixed-wing maximum pitch angle
-		if (_params->fw_qc_max_pitch > 0) {
-
-			if (fabsf(euler.theta()) > fabsf(math::radians(_params->fw_qc_max_pitch))) {
-				_attc->abort_front_transition("Maximum pitch angle exceeded");
-			}
-		}
-
-		// fixed-wing maximum roll angle
-		if (_params->fw_qc_max_roll > 0) {
-
-			if (fabsf(euler.phi()) > fabsf(math::radians(_params->fw_qc_max_roll))) {
-				_attc->abort_front_transition("Maximum roll angle exceeded");
-			}
-		}
-	}
-
 }

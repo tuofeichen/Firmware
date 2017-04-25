@@ -1,5 +1,5 @@
 #!/bin/bash
-# nuttx-configs/px4-stm32f4discovery/nsh/setenv.sh
+# configs/stm3240g-eval/nsh/setenv.sh
 #
 #   Copyright (C) 2011 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>

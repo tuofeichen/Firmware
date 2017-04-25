@@ -59,6 +59,8 @@ px4_add_module(
 	STACK_MAIN 3200
 	STACK_MAX 1500
 	COMPILE_FLAGS
+		-Wno-deprecated-declarations
+		-Os
 	SRCS
 		# Main
 		uavcan_main.cpp
@@ -80,4 +82,4 @@ px4_add_module(
 		uavcan
 	)
 
-## vim: set noet ft=cmake fenc=utf-8 ff=unix :
+## vim: set noet ft=cmake fenc=utf-8 ff=unix : 

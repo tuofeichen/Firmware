@@ -24,11 +24,13 @@ then
 	param set MC_YAWRATE_P 0.25
 	param set MC_YAWRATE_I 0.25
 	param set MC_YAWRATE_D 0.0
+	param SET MPC_XY_P 0.2
+	param SET MPC_XY_VEL_P 0.2
 
-	param set BAT_V_DIV 12.27559
-	param set BAT_A_PER_V 15.39103
+	param set BAT_V_SCALING 0.00989
+	param set BAT_C_SCALING 0.0124
 fi
 
-set MIXER quad_dc
+set MIXER quad_w
 
 set PWM_OUT 1234
