@@ -482,13 +482,26 @@ void AttitudeEstimatorQ::task_main()
 			orb_copy(ORB_ID(vision_position_estimate), _vision_sub, &_vision);
 			math::Quaternion q(_vision.q);
 
-			math::Matrix<3, 3> Rvis = q.to_dcm();
-			math::Vector<3> v(1.0f, 0.0f, 0.4f);
+			math::Matrix<3, 3> Rvis = q.to_dcm(); // this is a DCM
+
+			math::Vector<3> v(1.0f, 0.0f, 0.0f); // what's this number?!
+			math::Vector<3> rpy = q.to_euler();
+
+			// mavlink_and_console_log_critical(&_mavlink_log_pub,"[attq] rpy %4.2f %4.2f,%4.2f", (double)rpy(0),(double)rpy(1),(double)rpy(2));
+
+			// math::Vector<3> v(0.0f, -1.0f, 0.0f); // what's this number?!
 
 			// Rvis is Rwr (robot respect to world) while v is respect to world.
 			// Hence Rvis must be transposed having (Rwr)' * Vw
 			// Rrw * Vw = vn. This way we have consistency
+
+
 			_vision_hdg = Rvis.transposed() * v;
+
+			// _vision_hdg = Rvis.transposed();
+
+
+
 		}
 
 		if (mocap_updated) {
@@ -514,6 +527,7 @@ void AttitudeEstimatorQ::task_main()
 
 		// Check for timeouts on data
 		if (_ext_hdg_mode == 1) {
+
 			_ext_hdg_good = _vision.timestamp_boot > 0 && (hrt_elapsed_time(&_vision.timestamp_boot) < 500000);
 
 		} else if (_ext_hdg_mode == 2) {
@@ -699,11 +713,9 @@ bool AttitudeEstimatorQ::init()
 	k.normalize();
 
 	_mag = {0,-1,0};
-	
 	// 'i' is Earth X axis (North) unit vector in body frame, orthogonal with 'k'
-	Vector<3> i = ( - k * (_mag * k));
+	Vector<3> i = (_mag - k * (_mag * k));
 	i.normalize();
-
 
 	// 'j' is Earth Y axis (East) unit vector in body frame, orthogonal with 'k' and 'i'
 	Vector<3> j = k % i;
@@ -754,10 +766,17 @@ bool AttitudeEstimatorQ::update(float dt)
 
 	if (_ext_hdg_mode > 0 && _ext_hdg_good) {
 		if (_ext_hdg_mode == 1) {
+
+			// mavlink_and_console_log_critical(&_mavlink_log_pub,"[att q] External heading correction " );
+
 			// Vision heading correction
 			// Project heading to global frame and extract XY component
-			Vector<3> vision_hdg_earth = _q.conjugate(_vision_hdg);
+
+			Vector<3> vision_hdg_earth = _q.conjugate(_vision_hdg); // what changes
+
 			float vision_hdg_err = _wrap_pi(atan2f(vision_hdg_earth(1), vision_hdg_earth(0)));
+			// mavlink_and_console_log_critical(&_mavlink_log_pub,"[attq] hdg_err %4.2f", (double)vision_hdg_err);
+
 			// Project correction to body frame
 			corr += _q.conjugate_inversed(Vector<3>(0.0f, 0.0f, -vision_hdg_err)) * _w_ext_hdg;
 		}
