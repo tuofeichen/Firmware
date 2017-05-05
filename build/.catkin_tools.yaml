@@ -1,6 +1,0 @@
-devel_space: /home/tuofeichen/SLAM/testbench/Firmware/devel
-install: false
-install_space: /home/tuofeichen/SLAM/testbench/Firmware/install
-profile: default
-source_space: /home/tuofeichen/SLAM/testbench/Firmware/src
-workspace: /home/tuofeichen/SLAM/testbench/Firmware
