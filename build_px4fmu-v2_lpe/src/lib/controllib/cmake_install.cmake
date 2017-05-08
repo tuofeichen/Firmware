@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/lib/controllib
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/lib/controllib
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

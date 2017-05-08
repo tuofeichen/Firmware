@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/systemcmds/ver
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/systemcmds/ver
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

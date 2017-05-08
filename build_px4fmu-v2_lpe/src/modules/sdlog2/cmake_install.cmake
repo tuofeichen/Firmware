@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/modules/sdlog2
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/sdlog2
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

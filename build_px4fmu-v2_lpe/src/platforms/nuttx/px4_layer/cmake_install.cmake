@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/platforms/nuttx/px4_layer
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/platforms/nuttx/px4_layer
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

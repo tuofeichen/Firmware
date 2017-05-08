@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/drivers/stm32/adc
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/stm32/adc
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

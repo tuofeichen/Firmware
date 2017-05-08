@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/modules/sensors
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/sensors
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

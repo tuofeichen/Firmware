@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/drivers/airspeed
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/airspeed
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/systemcmds/esc_calib
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/systemcmds/esc_calib
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

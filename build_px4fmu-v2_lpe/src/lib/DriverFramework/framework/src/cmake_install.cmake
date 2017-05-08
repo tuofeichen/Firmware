@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/lib/DriverFramework/framework/src
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/lib/DriverFramework/framework/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

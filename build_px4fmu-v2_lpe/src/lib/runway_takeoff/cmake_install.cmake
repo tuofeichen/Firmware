@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/lib/runway_takeoff
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/lib/runway_takeoff
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

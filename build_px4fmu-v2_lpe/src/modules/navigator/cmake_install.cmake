@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/modules/navigator
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/navigator
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

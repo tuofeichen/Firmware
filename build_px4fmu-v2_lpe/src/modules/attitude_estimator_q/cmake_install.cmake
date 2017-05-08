@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/modules/attitude_estimator_q
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/attitude_estimator_q
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

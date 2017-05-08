@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/firmware/nuttx
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/firmware/nuttx
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -28,6 +28,6 @@ if(NOT CMAKE_INSTALL_COMPONENT)
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/." TYPE FILE FILES "/home/dexheimere/Firmware/build_px4fmu-v2_lpe/src/firmware/nuttx/nuttx-px4fmu-v2-lpe.px4")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/." TYPE FILE FILES "/home/tuofeichen/SLAM/Firmware/build_px4fmu-v2_lpe/src/firmware/nuttx/nuttx-px4fmu-v2-lpe.px4")
 endif()
 

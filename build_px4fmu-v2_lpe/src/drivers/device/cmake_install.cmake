@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/drivers/device
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/device
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -1,4 +1,4 @@
-# Install script for directory: /home/dexheimere/Firmware/src/modules/uavcan/libuavcan
+# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/uavcan/libuavcan
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -28,14 +28,14 @@ if(NOT CMAKE_INSTALL_COMPONENT)
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/uavcan" TYPE DIRECTORY FILES "/home/dexheimere/Firmware/src/modules/uavcan/libuavcan/dsdl")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/uavcan" TYPE DIRECTORY FILES "/home/tuofeichen/SLAM/Firmware/src/modules/uavcan/libuavcan/dsdl")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/dexheimere/Firmware/build_px4fmu-v2_lpe/src/modules/uavcan/libuavcan/libuavcan/cmake_install.cmake")
-  include("/home/dexheimere/Firmware/build_px4fmu-v2_lpe/src/modules/uavcan/libuavcan/libuavcan_drivers/posix/cmake_install.cmake")
-  include("/home/dexheimere/Firmware/build_px4fmu-v2_lpe/src/modules/uavcan/libuavcan/libuavcan_drivers/stm32/driver/cmake_install.cmake")
+  include("/home/tuofeichen/SLAM/Firmware/build_px4fmu-v2_lpe/src/modules/uavcan/libuavcan/libuavcan/cmake_install.cmake")
+  include("/home/tuofeichen/SLAM/Firmware/build_px4fmu-v2_lpe/src/modules/uavcan/libuavcan/libuavcan_drivers/posix/cmake_install.cmake")
+  include("/home/tuofeichen/SLAM/Firmware/build_px4fmu-v2_lpe/src/modules/uavcan/libuavcan/libuavcan_drivers/stm32/driver/cmake_install.cmake")
 
 endif()
 
