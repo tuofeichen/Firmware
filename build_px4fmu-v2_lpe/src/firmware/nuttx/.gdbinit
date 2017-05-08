@@ -4,4 +4,4 @@ attach 1
 monitor vector_catch disable hard
 set mem inaccessible-by-default off
 set print pretty
-source /home/tuofeichen/SLAM/Firmware/Debug/PX4
+source /home/dexheimere/Firmware/Debug/PX4

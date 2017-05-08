@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/fw_pos_control_l1
+# Install script for directory: /home/dexheimere/Firmware/src/modules/fw_pos_control_l1
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

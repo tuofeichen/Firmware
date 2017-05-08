@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/bst
+# Install script for directory: /home/dexheimere/Firmware/src/drivers/bst
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

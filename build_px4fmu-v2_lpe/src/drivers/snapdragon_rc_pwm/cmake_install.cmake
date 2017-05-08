@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/snapdragon_rc_pwm
+# Install script for directory: /home/dexheimere/Firmware/src/drivers/snapdragon_rc_pwm
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

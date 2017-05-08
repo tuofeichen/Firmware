@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/uavcan/libuavcan/libuavcan
+# Install script for directory: /home/dexheimere/Firmware/src/modules/uavcan/libuavcan/libuavcan
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -28,19 +28,19 @@ if(NOT CMAKE_INSTALL_COMPONENT)
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/tuofeichen/SLAM/Firmware/build_px4fmu-v2_lpe/src/modules/uavcan/libuavcan/libuavcan/libuavcan.a")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/dexheimere/Firmware/build_px4fmu-v2_lpe/src/modules/uavcan/libuavcan/libuavcan/libuavcan.a")
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/tuofeichen/SLAM/Firmware/src/modules/uavcan/libuavcan/libuavcan/include/uavcan")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/dexheimere/Firmware/src/modules/uavcan/libuavcan/libuavcan/include/uavcan")
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/tuofeichen/SLAM/Firmware/src/modules/uavcan/libuavcan/libuavcan/include/dsdlc_generated/uavcan")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/dexheimere/Firmware/src/modules/uavcan/libuavcan/libuavcan/include/dsdlc_generated/uavcan")
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   execute_process(COMMAND ./setup.py install --record installed_files.log
-                              WORKING_DIRECTORY /home/tuofeichen/SLAM/Firmware/src/modules/uavcan/libuavcan/libuavcan/dsdl_compiler)
+                              WORKING_DIRECTORY /home/dexheimere/Firmware/src/modules/uavcan/libuavcan/libuavcan/dsdl_compiler)
 endif()
 

@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/ets_airspeed
+# Install script for directory: /home/dexheimere/Firmware/src/drivers/ets_airspeed
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

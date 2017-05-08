@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/frsky_telemetry
+# Install script for directory: /home/dexheimere/Firmware/src/drivers/frsky_telemetry
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

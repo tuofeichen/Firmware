@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/platforms/nuttx
+# Install script for directory: /home/dexheimere/Firmware/src/platforms/nuttx
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
