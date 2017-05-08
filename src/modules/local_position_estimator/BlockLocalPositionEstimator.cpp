@@ -13,7 +13,7 @@ orb_advert_t mavlink_log_pub;
 static const uint32_t 		EST_SRC_TIMEOUT = 10000; // 0.01 s
 
 // minimum flow altitude
-static const float flow_min_agl = 0.35;
+static const float flow_min_agl = 0.3;
 
 BlockLocalPositionEstimator::BlockLocalPositionEstimator() :
 	// this block has no parent, and has name LPE

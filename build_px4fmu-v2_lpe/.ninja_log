@@ -590,3 +590,9 @@
 970	1031	0	src/modules/local_position_estimator/libmodules__local_position_estimator.a	2d3e1f6d44461126
 1031	1459	0	src/firmware/nuttx/firmware_nuttx	652abd07a1372b6b
 1459	1617	0	src/firmware/nuttx/nuttx-px4fmu-v2-lpe.px4	2da726ba9f56ee09
+14	676	0	src/modules/uavcan/libuavcan/libuavcan/CMakeFiles/libuavcan_dsdlc	44d1678014766581
+10	454	0	src/modules/uavcan/libuavcan/libuavcan/CMakeFiles/libuavcan_dsdlc	44d1678014766581
+10	1008	0	src/modules/local_position_estimator/CMakeFiles/modules__local_position_estimator.dir/BlockLocalPositionEstimator.cpp.obj	b93bdc41db952599
+1008	1023	0	src/modules/local_position_estimator/libmodules__local_position_estimator.a	2d3e1f6d44461126
+1023	1421	0	src/firmware/nuttx/firmware_nuttx	652abd07a1372b6b
+1421	1678	0	src/firmware/nuttx/nuttx-px4fmu-v2-lpe.px4	2da726ba9f56ee09
