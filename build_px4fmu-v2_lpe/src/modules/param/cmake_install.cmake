@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/param
+# Install script for directory: /home/dexheimere/Firmware/src/modules/param
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

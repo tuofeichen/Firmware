@@ -1,4 +1,4 @@
 /* Auto Magically Generated file */
 /* Do not edit! */
-#define PX4_GIT_VERSION_STR  "66b1ba91f407b78c4b2a6681b0b223dcc431a9cf"
-#define PX4_GIT_VERSION_BINARY 0x6b1ba91f407b78c4
+#define PX4_GIT_VERSION_STR  "3ca9124c4b03edbc0411faa70f25e575b7d9e373"
+#define PX4_GIT_VERSION_BINARY 0xca9124c4b03edbc0

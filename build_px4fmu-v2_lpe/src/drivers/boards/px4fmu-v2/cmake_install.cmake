@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/boards/px4fmu-v2
+# Install script for directory: /home/dexheimere/Firmware/src/drivers/boards/px4fmu-v2
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/lib/tailsitter_recovery
+# Install script for directory: /home/dexheimere/Firmware/src/lib/tailsitter_recovery
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

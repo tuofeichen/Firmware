@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/modules/local_position_estimator
+# Install script for directory: /home/dexheimere/Firmware/src/modules/local_position_estimator
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -1,4 +1,4 @@
-# Install script for directory: /home/tuofeichen/SLAM/Firmware/src/drivers/l3gd20
+# Install script for directory: /home/dexheimere/Firmware/src/drivers/l3gd20
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
